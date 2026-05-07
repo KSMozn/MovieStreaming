@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Disney+">
+  <defs>
+    <linearGradient id="dpG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0c2a6b"/>
+      <stop offset="100%" stop-color="#04122e"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="url(#dpG)"/>
+  <text x="50%" y="46%" text-anchor="middle" dominant-baseline="central"
+        font-family="Helvetica, Arial, sans-serif" font-style="italic"
+        font-size="15" font-weight="800" fill="#ffffff" letter-spacing="0.5">Disney</text>
+  <g transform="translate(32,46)" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
+    <line x1="-5" y1="0" x2="5" y2="0"/>
+    <line x1="0" y1="-5" x2="0" y2="5"/>
+  </g>
+</svg>

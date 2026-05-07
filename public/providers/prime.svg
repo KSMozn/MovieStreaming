@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Amazon Prime Video">
+  <defs>
+    <linearGradient id="pvG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1399FF"/>
+      <stop offset="100%" stop-color="#0F79AF"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="url(#pvG)"/>
+  <text x="50%" y="42%" text-anchor="middle" dominant-baseline="central" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="#ffffff">prime</text>
+  <text x="50%" y="62%" text-anchor="middle" dominant-baseline="central" font-family="Helvetica, Arial, sans-serif" font-size="8" font-weight="700" fill="#ffffff" letter-spacing="2" opacity="0.95">VIDEO</text>
+  <path d="M14 50 Q32 60 50 50" stroke="#ffffff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M48 47 L51 50 L48 53" stroke="#ffffff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
