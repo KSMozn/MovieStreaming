@@ -1,13 +1,25 @@
 import SwiftUI
+import SwiftData
 
 struct HomeView: View {
     @State private var vm = HomeViewModel()
     @State private var showAbout = false
+    @State private var searchText: String = ""
+    @State private var navigation: DiscoverResult?
 
-    private let columns = [
+    @Query(sort: \RecentItem.viewedAt, order: .reverse) private var recents: [RecentItem]
+
+    private let columns3 = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10)
+    ]
+    private let columns5 = [
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8)
     ]
 
     var body: some View {
@@ -15,22 +27,28 @@ struct HomeView: View {
             Theme.bg.ignoresSafeArea()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    header
-
-                    if vm.isLoading && vm.results.isEmpty {
-                        loadingState
-                    } else if let msg = vm.errorMessage, vm.results.isEmpty {
-                        errorState(msg)
-                    } else {
-                        grid
+                VStack(alignment: .leading, spacing: 24) {
+                    hero
+                    SearchBarField(text: $searchText) { result in
+                        navigation = result
                     }
+
+                    advancedSearchCTA
+
+                    if !recents.isEmpty {
+                        recentlyViewedSection
+                    }
+
+                    trendingSection
+
+                    footer
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 24)
+                .padding(.top, 4)
             }
         }
-        .navigationTitle("Trending")
+        .navigationTitle("Reelseek")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -38,6 +56,7 @@ struct HomeView: View {
                     showAbout = true
                 } label: {
                     Image(systemName: "info.circle")
+                        .foregroundStyle(Theme.accent)
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -52,61 +71,153 @@ struct HomeView: View {
         .sheet(isPresented: $showAbout) {
             AboutView()
         }
+        .navigationDestination(item: $navigation) { r in
+            DetailView(tmdbId: r.tmdbId, mediaType: r.mediaType, prefetched: r)
+        }
+        .navigationDestination(for: DiscoverResult.self) { r in
+            DetailView(tmdbId: r.tmdbId, mediaType: r.mediaType, prefetched: r)
+        }
+        .navigationDestination(for: AdvancedSearchTarget.self) { _ in
+            SearchView()
+        }
         .task {
             if vm.results.isEmpty { await vm.load() }
         }
         .refreshable { await vm.load() }
     }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
+    // MARK: – Sections
+
+    private var hero: some View {
+        VStack(alignment: .center, spacing: 8) {
             Text("Find where to watch")
-                .font(.system(size: 28, weight: .bold))
+                .font(.system(size: 30, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
-            Text("Trending across movies and TV")
-                .font(.system(size: 14))
+                .multilineTextAlignment(.center)
+            Text("Search any title and we’ll show ratings, cast, and which streaming service has it in your country.")
+                .font(.system(size: 13))
                 .foregroundStyle(Theme.textSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.top, 8)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 12)
     }
 
-    private var grid: some View {
-        LazyVGrid(columns: columns, spacing: 14) {
-            ForEach(vm.results) { r in
-                NavigationLink(value: r) {
-                    PosterCard(result: r)
+    private var advancedSearchCTA: some View {
+        NavigationLink(value: AdvancedSearchTarget.open) {
+            HStack(spacing: 8) {
+                Image(systemName: "slider.horizontal.3")
+                Text("Advanced search")
+                    .fontWeight(.medium)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(Theme.textMuted)
+            }
+            .font(.system(size: 14))
+            .foregroundStyle(Theme.textPrimary)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 11)
+            .background(Theme.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12).stroke(Theme.border, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    private var recentlyViewedSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionHeader("RECENTLY VIEWED")
+            LazyVGrid(columns: columns5, spacing: 10) {
+                ForEach(recents.prefix(10)) { item in
+                    let r = DiscoverResult(
+                        tmdbId: item.tmdbId,
+                        mediaType: item.mediaType,
+                        title: item.title,
+                        releaseYear: item.releaseYear,
+                        posterUrl: item.posterUrl,
+                        voteAverage: nil,
+                        voteCount: nil
+                    )
+                    NavigationLink(value: r) {
+                        compactPoster(r)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
         }
-        .navigationDestination(for: DiscoverResult.self) { r in
-            DetailView(tmdbId: r.tmdbId, mediaType: r.mediaType, prefetched: r)
+    }
+
+    private var trendingSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionHeader("TRENDING")
+            if vm.isLoading && vm.results.isEmpty {
+                ProgressView().tint(Theme.accent)
+                    .frame(maxWidth: .infinity, minHeight: 140)
+            } else if let msg = vm.errorMessage, vm.results.isEmpty {
+                Text(msg)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+            } else {
+                LazyVGrid(columns: columns3, spacing: 14) {
+                    ForEach(vm.results.prefix(12)) { r in
+                        NavigationLink(value: r) {
+                            PosterCard(result: r)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
         }
     }
 
-    private var loadingState: some View {
-        VStack(spacing: 12) {
-            ProgressView().tint(Theme.accent)
-            Text("Loading…").foregroundStyle(Theme.textMuted)
-        }
-        .frame(maxWidth: .infinity, minHeight: 240)
+    private var footer: some View {
+        Text("Data from TMDb, Watchmode, and OMDb. Not affiliated with any provider.")
+            .font(.system(size: 11))
+            .foregroundStyle(Theme.textMuted)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 12)
     }
 
-    private func errorState(_ msg: String) -> some View {
-        VStack(spacing: 12) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.title)
-                .foregroundStyle(.orange)
-            Text(msg)
-                .multilineTextAlignment(.center)
-                .font(.footnote)
+    // MARK: – Helpers
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 11, weight: .semibold))
+            .tracking(1.4)
+            .foregroundStyle(Theme.textMuted)
+    }
+
+    private func compactPoster(_ r: DiscoverResult) -> some View {
+        VStack(spacing: 4) {
+            ZStack(alignment: .topLeading) {
+                RemoteImage(urlString: r.posterUrl)
+                    .aspectRatio(2/3, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                if r.mediaType == .tv {
+                    Text("TV")
+                        .font(.system(size: 8, weight: .bold))
+                        .tracking(0.5)
+                        .padding(.horizontal, 4).padding(.vertical, 1)
+                        .background(Color.green.opacity(0.85))
+                        .foregroundStyle(Theme.bg)
+                        .clipShape(Capsule())
+                        .padding(4)
+                }
+            }
+            Text(r.title)
+                .font(.system(size: 10))
                 .foregroundStyle(Theme.textSecondary)
-            Button("Retry") { Task { await vm.load() } }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.accent)
+                .lineLimit(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(24)
-        .frame(maxWidth: .infinity)
     }
+}
+
+/// Distinct hashable so the navigationDestination to advanced search doesn't
+/// collide with DiscoverResult destinations.
+enum AdvancedSearchTarget: Hashable {
+    case open
 }

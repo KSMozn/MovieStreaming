@@ -48,7 +48,23 @@ struct DetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await vm.load(tmdbId: tmdbId, mediaType: mediaType, country: APIConfig.defaultCountry)
+            recordView()
         }
+    }
+
+    private func recordView() {
+        let title = vm.details?.title ?? prefetched?.title
+        guard let title, !title.isEmpty else { return }
+        let poster = vm.details?.posterUrl ?? prefetched?.posterUrl
+        let year = vm.details?.releaseDate.flatMap { String($0.prefix(4)) } ?? prefetched?.releaseYear
+        RecentItem.touch(
+            context: modelContext,
+            tmdbId: tmdbId,
+            mediaType: mediaType,
+            title: title,
+            posterUrl: poster,
+            releaseYear: year
+        )
     }
 
     private var backdrop: some View {

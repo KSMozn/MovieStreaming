@@ -55,6 +55,12 @@ enum MovieAPI {
         try await APIClient.shared.get("/api/people/search", query: ["q": name])
     }
 
+    /// Instant title search — autocomplete style. Returns lightweight items
+    /// matching the web's `/api/movies/search` endpoint.
+    static func searchMovies(_ name: String) async throws -> [DiscoverResult] {
+        try await APIClient.shared.get("/api/movies/search", query: ["q": name])
+    }
+
     /// Trending: /api/discover with no filters, sorted by popularity.
     static func trending(mediaType: MediaTypeFilter = .both, page: Int = 1) async throws -> DiscoverResponse {
         var q = DiscoverQuery()

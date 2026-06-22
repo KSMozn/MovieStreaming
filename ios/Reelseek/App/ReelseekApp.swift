@@ -9,6 +9,6 @@ struct ReelseekApp: App {
                 .preferredColorScheme(.dark)
                 .tint(Theme.accent)
         }
-        .modelContainer(for: [WatchlistItem.self])
+        .modelContainer(for: [WatchlistItem.self, RecentItem.self])
     }
 }
