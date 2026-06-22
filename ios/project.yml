@@ -40,7 +40,7 @@ targets:
         APIBaseURL: $(API_BASE_URL)
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.moviestreaming.ios
+        PRODUCT_BUNDLE_IDENTIFIER: com.khaledsamir.moviestreaming
         TARGETED_DEVICE_FAMILY: "1,2"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor

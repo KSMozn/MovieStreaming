@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var vm = HomeViewModel()
+    @State private var showAbout = false
 
     private let columns = [
         GridItem(.flexible(), spacing: 10),
@@ -32,6 +33,13 @@ struct HomeView: View {
         .navigationTitle("Trending")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    showAbout = true
+                } label: {
+                    Image(systemName: "info.circle")
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     Task { await vm.load() }
@@ -40,6 +48,9 @@ struct HomeView: View {
                 }
                 .disabled(vm.isLoading)
             }
+        }
+        .sheet(isPresented: $showAbout) {
+            AboutView()
         }
         .task {
             if vm.results.isEmpty { await vm.load() }
