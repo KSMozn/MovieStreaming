@@ -7,3 +7,4 @@ out
 coverage
 *.log
 tsconfig.tsbuildinfo
+.claude/
