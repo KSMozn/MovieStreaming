@@ -127,7 +127,7 @@ struct FiltersSheet: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Apply") {
+                    Button("Search") {
                         vm.runSearch()
                         dismiss()
                     }

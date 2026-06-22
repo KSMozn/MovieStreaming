@@ -191,28 +191,18 @@ struct SearchView: View {
             Image(systemName: "slider.horizontal.3")
                 .font(.title)
                 .foregroundStyle(Theme.textMuted)
-            Text("Pick any combination of genre, provider, year, rating, sort order, or cast member — title is optional.")
+            Text("Open filters to narrow by genre, provider, year, rating, sort order, or cast member. Title is optional.")
                 .multilineTextAlignment(.center)
                 .font(.footnote)
                 .foregroundStyle(Theme.textSecondary)
-            HStack(spacing: 8) {
-                Button {
-                    showFilters = true
-                } label: {
-                    Label("Open filters", systemImage: "slider.horizontal.3")
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.accent)
-                .foregroundStyle(Theme.bg)
-
-                Button {
-                    vm.runSearch()
-                } label: {
-                    Label("Browse popular", systemImage: "flame")
-                }
-                .buttonStyle(.bordered)
-                .tint(Theme.accent)
+            Button {
+                showFilters = true
+            } label: {
+                Label("Open filters", systemImage: "slider.horizontal.3")
             }
+            .buttonStyle(.borderedProminent)
+            .tint(Theme.accent)
+            .foregroundStyle(Theme.bg)
         }
         .frame(maxWidth: .infinity)
         .padding(32)
