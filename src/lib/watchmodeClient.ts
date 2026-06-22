@@ -52,11 +52,14 @@ function mapType(t: string): AvailabilityType {
 async function resolveWatchmodeId(opts: {
   imdbId: string | null;
   tmdbId: number;
+  mediaType: MediaType;
 }): Promise<number | null> {
   const k = process.env.WATCHMODE_API_KEY;
   if (!k) return null;
   // Watchmode supports search by imdb_id or tmdb_id via search endpoint.
-  const idValue = opts.imdbId ?? `movie-${opts.tmdbId}`;
+  // tmdb_id values must be prefixed with media type: "movie-{id}" or "tv-{id}".
+  const idValue =
+    opts.imdbId ?? `${opts.mediaType === "tv" ? "tv" : "movie"}-${opts.tmdbId}`;
   const idType = opts.imdbId ? "imdb_id" : "tmdb_id";
   const url = `${WM_BASE}/search/?apiKey=${encodeURIComponent(
     k
@@ -161,7 +164,11 @@ export async function getAvailability(opts: {
 
   // Optional: enhance with Watchmode (deep links + dates + provider category).
   const wmId = process.env.WATCHMODE_API_KEY
-    ? await resolveWatchmodeId(opts)
+    ? await resolveWatchmodeId({
+        imdbId: opts.imdbId,
+        tmdbId: opts.tmdbId,
+        mediaType: opts.mediaType
+      })
     : null;
   if (wmId) {
     const sources = await fetchSources(wmId, region);

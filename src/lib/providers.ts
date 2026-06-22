@@ -57,6 +57,13 @@ export const PROVIDERS: ProviderConfig[] = [
     tmdbProviderIds: [432]
   },
   {
+    key: "tod",
+    name: "TOD",
+    logoUrl: "/providers/tod.svg",
+    aliases: ["tod", "tod tv", "bein tod", "bein", "bein connect"],
+    tmdbProviderIds: [1854]
+  },
+  {
     key: "disney_plus",
     name: "Disney+",
     logoUrl: "/providers/disney_plus.svg",

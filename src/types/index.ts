@@ -8,6 +8,7 @@ export type ProviderKey =
   | "amazon_prime_video"
   | "shahid"
   | "watch_it"
+  | "tod"
   | "disney_plus"
   | "apple_tv_plus";
 
