@@ -99,7 +99,7 @@ struct SearchView: View {
             HStack(spacing: 6) {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(Theme.textMuted)
-                TextField("Title (movie or TV)", text: $vm.query.name)
+                TextField("Title (optional)", text: $vm.query.name)
                     .textInputAutocapitalization(.never)
                     .submitLabel(.search)
                     .onSubmit { vm.runSearch() }
@@ -187,22 +187,32 @@ struct SearchView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "magnifyingglass")
+        VStack(spacing: 12) {
+            Image(systemName: "slider.horizontal.3")
                 .font(.title)
                 .foregroundStyle(Theme.textMuted)
-            Text("Try a title, or open filters to narrow by genre, provider, year, or actor.")
+            Text("Pick any combination of genre, provider, year, rating, sort order, or cast member — title is optional.")
                 .multilineTextAlignment(.center)
                 .font(.footnote)
                 .foregroundStyle(Theme.textSecondary)
-            Button {
-                showFilters = true
-            } label: {
-                Label("Open filters", systemImage: "slider.horizontal.3")
+            HStack(spacing: 8) {
+                Button {
+                    showFilters = true
+                } label: {
+                    Label("Open filters", systemImage: "slider.horizontal.3")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Theme.accent)
+                .foregroundStyle(Theme.bg)
+
+                Button {
+                    vm.runSearch()
+                } label: {
+                    Label("Browse popular", systemImage: "flame")
+                }
+                .buttonStyle(.bordered)
+                .tint(Theme.accent)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.accent)
-            .foregroundStyle(Theme.bg)
         }
         .frame(maxWidth: .infinity)
         .padding(32)
