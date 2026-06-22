@@ -69,10 +69,10 @@ struct DetailView: View {
 
     private var backdrop: some View {
         let backdrop = vm.details?.backdropUrl ?? prefetched?.posterUrl
-        return ZStack(alignment: .bottomLeading) {
-            RemoteImage(urlString: backdrop)
-                .aspectRatio(16/9, contentMode: .fill)
+        return ZStack(alignment: .bottom) {
+            RemoteImage(urlString: backdrop, contentMode: .fill)
                 .frame(maxWidth: .infinity)
+                .frame(height: 220)
                 .clipped()
 
             LinearGradient(
@@ -80,8 +80,9 @@ struct DetailView: View {
                 startPoint: .top, endPoint: .bottom
             )
             .frame(height: 100)
-            .frame(maxWidth: .infinity, alignment: .bottom)
+            .frame(maxWidth: .infinity)
         }
+        .frame(height: 220)
     }
 
     private var titleBlock: some View {
