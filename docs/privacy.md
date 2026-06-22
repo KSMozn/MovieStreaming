@@ -1,5 +1,5 @@
 ---
-title: Privacy Policy — MovieStreaming
+title: Privacy Policy — Reelseek
 permalink: /privacy/
 ---
 
@@ -7,7 +7,7 @@ permalink: /privacy/
 
 **Last updated:** 22 June 2026
 
-This is the privacy policy for the **MovieStreaming** iOS app and web app (the "App"), operated by Khaled Samir (the "Operator").
+This is the privacy policy for the **Reelseek** iOS app and web app (the "App"), operated by Khaled Samir (the "Operator").
 
 The App is designed to collect as little data as possible. We do not require an account, we do not show ads, we do not embed third-party analytics or advertising SDKs, and we do not sell or share personal data.
 

@@ -16,7 +16,7 @@ struct AboutView: View {
                     header
 
                     section(title: "About") {
-                        Text("MovieStreaming helps you find where to watch any movie or TV show in your country, with ratings, cast, and live availability across major streaming providers.")
+                        Text("Reelseek helps you find where to watch any movie or TV show in your country, with ratings, cast, and live availability across major streaming providers.")
                             .foregroundStyle(Theme.textSecondary)
                     }
 
@@ -91,7 +91,7 @@ struct AboutView: View {
                 .background(Theme.surface2)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
             VStack(alignment: .leading, spacing: 2) {
-                Text("MovieStreaming")
+                Text("Reelseek")
                     .font(.title2).bold()
                     .foregroundStyle(Theme.textPrimary)
                 Text("Find where to watch")

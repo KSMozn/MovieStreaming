@@ -1,8 +1,8 @@
 ---
-title: MovieStreaming
+title: Reelseek
 ---
 
-# MovieStreaming
+# Reelseek
 
 Find where to watch any movie or TV show across major streaming providers.
 

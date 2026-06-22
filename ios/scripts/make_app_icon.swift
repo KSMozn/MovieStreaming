@@ -1,6 +1,6 @@
 // Generates the App Store icon at 1024x1024.
 // Run with: swift scripts/make_app_icon.swift
-// Output:   MovieStreaming/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png
+// Output:   Reelseek/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png
 //
 // Design: dark aurora gradient (navy → indigo → magenta hint) with a bold
 // rounded-corner play triangle in amber, lifted off the background by a soft
@@ -10,7 +10,7 @@ import AppKit
 import CoreGraphics
 
 let size = 1024
-let outDir = "MovieStreaming/Resources/Assets.xcassets/AppIcon.appiconset"
+let outDir = "Reelseek/Resources/Assets.xcassets/AppIcon.appiconset"
 let outPath = "\(outDir)/icon-1024.png"
 
 let cs = CGColorSpaceCreateDeviceRGB()
