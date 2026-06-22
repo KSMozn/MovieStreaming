@@ -443,6 +443,7 @@ export interface DiscoverFilters {
   genreIds?: number[];
   year?: number | null;
   voteAverageGte?: number | null;
+  voteCountGte?: number | null;
   withCastIds?: number[]; // movie only
   withPeopleIds?: number[]; // tv (any role)
   watchProviderIds?: number[];
@@ -497,6 +498,8 @@ export async function tmdbDiscover(
     params.set("with_genres", f.genreIds.join("|"));
   if (typeof f.voteAverageGte === "number")
     params.set("vote_average.gte", String(f.voteAverageGte));
+  if (typeof f.voteCountGte === "number")
+    params.set("vote_count.gte", String(f.voteCountGte));
   if (f.watchProviderIds && f.watchProviderIds.length > 0) {
     params.set("with_watch_providers", f.watchProviderIds.join("|"));
     params.set("watch_region", (f.watchRegion ?? "US").toUpperCase());

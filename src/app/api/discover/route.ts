@@ -7,6 +7,7 @@ import {
   type DiscoverResultDto
 } from "@/lib/tmdbClient";
 import { PROVIDERS } from "@/lib/providers";
+import { DEFAULT_SORT, isSortKey, type SortKey } from "@/lib/sort";
 import type { ApiError, MediaType, ProviderKey } from "@/types";
 
 export const runtime = "nodejs";
@@ -26,8 +27,64 @@ export interface DiscoverResponse {
     mediaType: MediaType | "both";
     country: string;
     page: number;
+    sortBy: SortKey;
   };
   warnings: string[];
+}
+
+function tmdbSortFor(sortBy: SortKey, mt: MediaType): string {
+  switch (sortBy) {
+    case "rating.desc":
+      return "vote_average.desc";
+    case "rating.asc":
+      return "vote_average.asc";
+    case "release.desc":
+      return mt === "movie"
+        ? "primary_release_date.desc"
+        : "first_air_date.desc";
+    case "release.asc":
+      return mt === "movie"
+        ? "primary_release_date.asc"
+        : "first_air_date.asc";
+    case "votes.desc":
+      return "vote_count.desc";
+    case "popularity.desc":
+    default:
+      return "popularity.desc";
+  }
+}
+
+function compareForSort(
+  a: DiscoverResultDto,
+  b: DiscoverResultDto,
+  sortBy: SortKey
+): number {
+  const yearA = a.releaseYear ? Number(a.releaseYear) : null;
+  const yearB = b.releaseYear ? Number(b.releaseYear) : null;
+  switch (sortBy) {
+    case "rating.desc":
+      return (
+        (b.voteAverage ?? -1) - (a.voteAverage ?? -1) ||
+        (b.voteCount ?? 0) - (a.voteCount ?? 0)
+      );
+    case "rating.asc":
+      return (
+        (a.voteAverage ?? 11) - (b.voteAverage ?? 11) ||
+        (b.voteCount ?? 0) - (a.voteCount ?? 0)
+      );
+    case "release.desc":
+      return (yearB ?? -Infinity) - (yearA ?? -Infinity);
+    case "release.asc":
+      return (yearA ?? Infinity) - (yearB ?? Infinity);
+    case "votes.desc":
+      return (b.voteCount ?? 0) - (a.voteCount ?? 0);
+    case "popularity.desc":
+    default:
+      return (
+        (b.voteCount ?? 0) - (a.voteCount ?? 0) ||
+        (b.voteAverage ?? 0) - (a.voteAverage ?? 0)
+      );
+  }
 }
 
 function parseIntList(s: string | null): number[] {
@@ -56,6 +113,8 @@ export async function GET(
     mtRaw === "movie" || mtRaw === "tv" ? mtRaw : "both";
   const country = (sp.get("country") ?? "EG").toUpperCase();
   const page = Math.max(1, Number(sp.get("page") ?? 1) || 1);
+  const sortByRaw = sp.get("sortBy") ?? "";
+  const sortBy: SortKey = isSortKey(sortByRaw) ? sortByRaw : DEFAULT_SORT;
 
   const provider = providerKey
     ? PROVIDERS.find((p) => p.key === providerKey) ?? null
@@ -78,11 +137,7 @@ export async function GET(
           "Genre, provider, and actor filters are not applied when searching by name. Clear the name to enable them."
         );
       }
-      results.sort(
-        (a, b) =>
-          (b.voteCount ?? 0) - (a.voteCount ?? 0) ||
-          (b.voteAverage ?? 0) - (a.voteAverage ?? 0)
-      );
+      results.sort((a, b) => compareForSort(a, b, sortBy));
       const PAGE_SIZE = 20;
       const totalPages = Math.max(1, Math.ceil(results.length / PAGE_SIZE));
       const safePage = Math.min(Math.max(1, page), totalPages);
@@ -101,7 +156,8 @@ export async function GET(
           personId,
           mediaType,
           country,
-          page
+          page,
+          sortBy
         },
         warnings
       });
@@ -173,13 +229,7 @@ export async function GET(
         );
       }
 
-      results.sort(
-        (a, b) =>
-          (b.voteAverage ?? 0) - (a.voteAverage ?? 0) ||
-          (a.releaseYear && b.releaseYear
-            ? b.releaseYear.localeCompare(a.releaseYear)
-            : 0)
-      );
+      results.sort((a, b) => compareForSort(a, b, sortBy));
 
       const PAGE_SIZE = 20;
       const totalPages = Math.max(1, Math.ceil(results.length / PAGE_SIZE));
@@ -200,13 +250,18 @@ export async function GET(
           personId,
           mediaType,
           country,
-          page
+          page,
+          sortBy
         },
         warnings
       });
     }
 
     // Path B2: no actor → standard /discover.
+    // When sorting by rating, require a minimum vote count or TMDb returns
+    // obscure titles with a single 10/10 vote at the top.
+    const voteCountGte =
+      sortBy === "rating.desc" || sortBy === "rating.asc" ? 200 : null;
     const responses = await Promise.all(
       types.map((mt) =>
         tmdbDiscover({
@@ -217,9 +272,11 @@ export async function GET(
             typeof voteAverageGte === "number" && !Number.isNaN(voteAverageGte)
               ? voteAverageGte
               : null,
+          voteCountGte,
           watchProviderIds,
           watchRegion: country,
-          page
+          page,
+          sortBy: tmdbSortFor(sortBy, mt)
         })
       )
     );
@@ -231,11 +288,7 @@ export async function GET(
     }
 
     const merged = responses.flatMap((r) => r.results);
-    merged.sort(
-      (a, b) =>
-        (b.voteCount ?? 0) - (a.voteCount ?? 0) ||
-        (b.voteAverage ?? 0) - (a.voteAverage ?? 0)
-    );
+    merged.sort((a, b) => compareForSort(a, b, sortBy));
 
     return NextResponse.json({
       results: merged,
@@ -250,7 +303,8 @@ export async function GET(
         personId,
         mediaType,
         country,
-        page
+        page,
+        sortBy
       },
       warnings
     });

@@ -4,6 +4,7 @@ import {
   AdvancedSearchForm,
   type SearchFormValues
 } from "@/components/AdvancedSearchForm";
+import { DEFAULT_SORT, isSortKey, type SortKey } from "@/lib/sort";
 import type { DiscoverResponse } from "@/app/api/discover/route";
 import type { ProviderKey } from "@/types";
 
@@ -61,7 +62,10 @@ export default async function SearchPage({ searchParams }: PageProps) {
     personName: getStr(searchParams.personName),
     mediaType:
       (getStr(searchParams.mediaType) as "movie" | "tv" | "both") || "both",
-    country: getStr(searchParams.country) || "EG"
+    country: getStr(searchParams.country) || "EG",
+    sortBy: (isSortKey(getStr(searchParams.sortBy))
+      ? (getStr(searchParams.sortBy) as SortKey)
+      : DEFAULT_SORT)
   };
 
   const data = await runSearch(searchParams);

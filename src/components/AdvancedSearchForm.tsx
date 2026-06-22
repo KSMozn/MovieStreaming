@@ -7,6 +7,7 @@ import { PROVIDERS } from "@/lib/providers";
 import type { MediaType, ProviderKey } from "@/types";
 import type { CombinedGenreDto } from "@/app/api/genres/route";
 import type { PersonSearchResult } from "@/lib/tmdbClient";
+import { SORT_OPTIONS, type SortKey } from "@/lib/sort";
 
 export interface SearchFormValues {
   q: string;
@@ -18,6 +19,7 @@ export interface SearchFormValues {
   personName: string;
   mediaType: MediaType | "both";
   country: string;
+  sortBy: SortKey;
 }
 
 const COUNTRIES = [
@@ -129,7 +131,8 @@ export function AdvancedSearchForm({ initial }: Props) {
       personId: null,
       personName: "",
       mediaType: "both",
-      country: values.country
+      country: values.country,
+      sortBy: "popularity.desc"
     };
     setValues(empty);
     router.push("/search");
@@ -149,6 +152,8 @@ export function AdvancedSearchForm({ initial }: Props) {
     }
     if (values.mediaType !== "both") sp.set("mediaType", values.mediaType);
     if (values.country) sp.set("country", values.country);
+    if (values.sortBy && values.sortBy !== "popularity.desc")
+      sp.set("sortBy", values.sortBy);
     const qs = sp.toString();
     router.push(qs ? `/search?${qs}` : "/search");
   }
@@ -399,6 +404,24 @@ export function AdvancedSearchForm({ initial }: Props) {
             <option value="both">Movies & TV</option>
             <option value="movie">Movies only</option>
             <option value="tv">TV series only</option>
+          </select>
+        </label>
+
+        {/* Sort by */}
+        <label className="block">
+          <span className="text-xs uppercase tracking-wider text-white/50">
+            Sort by
+          </span>
+          <select
+            value={values.sortBy}
+            onChange={(e) => update("sortBy", e.target.value as SortKey)}
+            className="mt-1 w-full bg-bg border border-border rounded-lg px-3 py-2 outline-none focus:border-accent"
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
           </select>
         </label>
 
