@@ -27,7 +27,7 @@ export const PROVIDERS: ProviderConfig[] = [
     name: "OSN+",
     logoUrl: "/providers/osn.svg",
     aliases: ["osn", "osn+", "osn plus", "osn streaming"],
-    tmdbProviderIds: [389, 305]
+    tmdbProviderIds: [629]
   },
   {
     key: "amazon_prime_video",
@@ -47,21 +47,23 @@ export const PROVIDERS: ProviderConfig[] = [
     name: "Shahid",
     logoUrl: "/providers/shahid.svg",
     aliases: ["shahid", "shahid vip", "shahidvip"],
-    tmdbProviderIds: [195]
+    tmdbProviderIds: [1715]
   },
   {
     key: "watch_it",
     name: "Watch It",
     logoUrl: "/providers/watchit.svg",
     aliases: ["watch it", "watchit", "watch-it"],
-    tmdbProviderIds: [432]
+    // Watch It is not in TMDb's catalog; leaving empty triggers a warning
+    // ("No TMDb provider id is mapped …") rather than silently returning 0.
+    tmdbProviderIds: []
   },
   {
     key: "tod",
     name: "TOD",
     logoUrl: "/providers/tod.svg",
     aliases: ["tod", "tod tv", "bein tod", "bein", "bein connect"],
-    tmdbProviderIds: [1854]
+    tmdbProviderIds: [1750]
   },
   {
     key: "disney_plus",
