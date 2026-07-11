@@ -1,21 +1,21 @@
 import SwiftUI
 
-// Exact match to the web Tailwind tokens in /tailwind.config.ts.
+// Official ReelSeek palette — mirrors the web brand tokens in src/app/globals.css.
 enum Theme {
-    // #0b0d12
-    static let bg = Color(red: 0x0b/255, green: 0x0d/255, blue: 0x12/255)
-    // #141821
-    static let surface = Color(red: 0x14/255, green: 0x18/255, blue: 0x21/255)
-    // #1c2230
-    static let surface2 = Color(red: 0x1c/255, green: 0x22/255, blue: 0x30/255)
-    // #262d3d
-    static let border = Color(red: 0x26/255, green: 0x2d/255, blue: 0x3d/255)
-    // #f5c518 — IMDb yellow
-    static let accent = Color(red: 0xf5/255, green: 0xc5/255, blue: 0x18/255)
-    // #e6e8ee
-    static let textPrimary = Color(red: 0xe6/255, green: 0xe8/255, blue: 0xee/255)
-    static let textSecondary = Color.white.opacity(0.62)
-    static let textMuted = Color.white.opacity(0.40)
+    // #0d1b2a Deep Navy
+    static let bg = Color(red: 0x0d/255, green: 0x1b/255, blue: 0x2a/255)
+    // #222831 Charcoal
+    static let surface = Color(red: 0x22/255, green: 0x28/255, blue: 0x31/255)
+    // #2b3440 derived elevated
+    static let surface2 = Color(red: 0x2b/255, green: 0x34/255, blue: 0x40/255)
+    // #364252 derived border
+    static let border = Color(red: 0x36/255, green: 0x42/255, blue: 0x52/255)
+    // #f5a623 Warm Amber
+    static let accent = Color(red: 0xf5/255, green: 0xa6/255, blue: 0x23/255)
+    // #f7f8fa Light Neutral
+    static let textPrimary = Color(red: 0xf7/255, green: 0xf8/255, blue: 0xfa/255)
+    static let textSecondary = Color.white.opacity(0.65)
+    static let textMuted = Color.white.opacity(0.42)
 
     static let cornerRadius: CGFloat = 12
     static let cardCornerRadius: CGFloat = 10

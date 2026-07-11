@@ -79,14 +79,14 @@ fun AboutScreen(navController: NavController) {
                     )
                 }
                 Column {
-                    Text("Reelseek", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Theme.TextPrimary)
-                    Text("Find where to watch", fontSize = 13.sp, color = Theme.TextSecondary)
+                    Text("ReelSeek", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Theme.TextPrimary)
+                    Text("Find what to watch.", fontSize = 13.sp, color = Theme.TextSecondary)
                 }
             }
 
             Section("About") {
                 Text(
-                    "Reelseek helps you find where to watch any movie or TV show in your country, with ratings, cast, and live availability across major streaming providers.",
+                    "ReelSeek helps you find where to watch any movie or TV show in your country, with ratings, cast, and live availability across major streaming providers.",
                     fontSize = 14.sp,
                     color = Theme.TextSecondary
                 )

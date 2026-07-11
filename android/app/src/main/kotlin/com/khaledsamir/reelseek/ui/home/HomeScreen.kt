@@ -78,7 +78,7 @@ fun HomeScreen(navController: NavController) {
 
     Column(Modifier.fillMaxSize().background(Theme.Bg)) {
         TopAppBar(
-            title = { Text("Reelseek", fontWeight = FontWeight.SemiBold) },
+            title = { Text("ReelSeek", fontWeight = FontWeight.SemiBold) },
             navigationIcon = {
                 IconButton(onClick = { navController.navigate(AboutRoute) }) {
                     Icon(Icons.Default.Info, contentDescription = "About", tint = Theme.Accent)
@@ -157,14 +157,14 @@ private fun Hero() {
         modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
     ) {
         Text(
-            "Find where to watch",
+            "Find what to watch.",
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
             color = Theme.TextPrimary,
             textAlign = TextAlign.Center
         )
         Text(
-            "Search any title and we’ll show ratings, cast, and which streaming service has it in your country.",
+            "Discover movies and TV shows and see where they are streaming in your country.",
             fontSize = 13.sp,
             color = Theme.TextSecondary,
             textAlign = TextAlign.Center

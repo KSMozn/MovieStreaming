@@ -11,16 +11,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-// Exact match to the web Tailwind tokens in /tailwind.config.ts (same as ios Theme.swift).
+// Official ReelSeek palette — mirrors the web brand tokens in src/app/globals.css.
 object Theme {
-    val Bg = Color(0xFF0B0D12)
-    val Surface = Color(0xFF141821)
-    val Surface2 = Color(0xFF1C2230)
-    val Border = Color(0xFF262D3D)
-    val Accent = Color(0xFFF5C518) // IMDb yellow
-    val TextPrimary = Color(0xFFE6E8EE)
-    val TextSecondary = Color.White.copy(alpha = 0.62f)
-    val TextMuted = Color.White.copy(alpha = 0.40f)
+    val Bg = Color(0xFF0D1B2A)
+    val Surface = Color(0xFF222831)
+    val Surface2 = Color(0xFF2B3440)
+    val Border = Color(0xFF364252)
+    val Accent = Color(0xFFF5A623) // Warm Amber
+    val TextPrimary = Color(0xFFF7F8FA)
+    val TextSecondary = Color.White.copy(alpha = 0.65f)
+    val TextMuted = Color.White.copy(alpha = 0.42f)
 
     val CornerRadius = 12.dp
     val CardCornerRadius = 10.dp

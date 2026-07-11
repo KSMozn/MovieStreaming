@@ -4,26 +4,26 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Find+play mark from the iOS icon, redrawn for the adaptive-icon safe zone -->
+    <!-- Official ReelSeek mark drawn for the adaptive-icon safe zone -->
     <!-- Magnifier handle -->
     <path
         android:pathData="M69,65 L80,76"
-        android:strokeColor="#F2F0F7"
+        android:strokeColor="#F7F8FA"
         android:strokeWidth="8"
         android:strokeLineCap="round"
         android:fillColor="#00000000" />
     <!-- Lens: dark disc -->
     <path
         android:pathData="M54,50 m-19,0 a19,19 0 1,1 38,0 a19,19 0 1,1 -38,0"
-        android:fillColor="#1A1030" />
+        android:fillColor="#0D1B2A" />
     <!-- Lens ring -->
     <path
         android:pathData="M54,50 m-19,0 a19,19 0 1,1 38,0 a19,19 0 1,1 -38,0"
-        android:strokeColor="#F2F0F7"
+        android:strokeColor="#F7F8FA"
         android:strokeWidth="7"
         android:fillColor="#00000000" />
     <!-- Play triangle -->
     <path
         android:pathData="M49.5,42.5 L63,50 L49.5,57.5 Z"
-        android:fillColor="#F5C518" />
+        android:fillColor="#F5A623" />
 </vector>

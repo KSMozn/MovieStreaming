@@ -48,7 +48,7 @@ struct HomeView: View {
                 .padding(.top, 4)
             }
         }
-        .navigationTitle("Reelseek")
+        .navigationTitle("ReelSeek")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -90,11 +90,11 @@ struct HomeView: View {
 
     private var hero: some View {
         VStack(alignment: .center, spacing: 8) {
-            Text("Find where to watch")
+            Text("Find what to watch.")
                 .font(.system(size: 30, weight: .bold))
                 .foregroundStyle(Theme.textPrimary)
                 .multilineTextAlignment(.center)
-            Text("Search any title and we’ll show ratings, cast, and which streaming service has it in your country.")
+            Text("Discover movies and TV shows and see where they are streaming in your country.")
                 .font(.system(size: 13))
                 .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
