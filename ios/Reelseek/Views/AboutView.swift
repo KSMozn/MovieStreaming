@@ -3,6 +3,15 @@ import SwiftUI
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
 
+    // Opens the mail composer addressed to the ReelSeek inbox with a subject
+    // that identifies it as ReelSeek feedback from iOS.
+    private var feedbackMailto: String {
+        let subject = "ReelSeek Feedback (iOS)"
+        let allowed = CharacterSet.urlQueryAllowed
+        let encoded = subject.addingPercentEncoding(withAllowedCharacters: allowed) ?? subject
+        return "mailto:eng_khalidsamir@yahoo.com?subject=\(encoded)"
+    }
+
     private var appVersion: String {
         let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
@@ -56,9 +65,21 @@ struct AboutView: View {
                             bullet("Your watchlist is stored only on this device.")
                             bullet("Search queries go to our own server, which proxies TMDb. We do not retain personal data.")
                         }
-                        if let url = URL(string: "https://ksmozn.github.io/MovieStreaming/privacy") {
+                        if let url = URL(string: "https://reelseek.co/privacy") {
                             Link(destination: url) {
                                 Label("Full privacy policy", systemImage: "arrow.up.right.square")
+                                    .font(.footnote)
+                            }
+                            .padding(.top, 4)
+                        }
+                    }
+
+                    section(title: "Feedback") {
+                        Text("Found a bug, want a feature, or spotted wrong availability? We'd love to hear from you.")
+                            .foregroundStyle(Theme.textSecondary)
+                        if let url = URL(string: feedbackMailto) {
+                            Link(destination: url) {
+                                Label("Send feedback", systemImage: "envelope")
                                     .font(.footnote)
                             }
                             .padding(.top, 4)

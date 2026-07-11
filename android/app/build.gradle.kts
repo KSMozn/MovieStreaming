@@ -9,7 +9,7 @@ plugins {
 import java.util.Properties
 
 val apiBaseUrl: String = (project.findProperty("apiBaseUrl") as? String)
-    ?: "https://movie-streaming-150176375922.europe-west1.run.app"
+    ?: "https://reelseek.co"
 
 // Release signing from android/keystore.properties (gitignored):
 //   storeFile=upload-keystore.jks

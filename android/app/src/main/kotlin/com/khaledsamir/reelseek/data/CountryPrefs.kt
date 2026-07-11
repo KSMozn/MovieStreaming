@@ -11,8 +11,9 @@ import kotlinx.coroutines.flow.map
 private val Context.dataStore by preferencesDataStore(name = "settings")
 private val COUNTRY_KEY = stringPreferencesKey("country")
 
-// Selected availability country (EG/SA/AE) — the web keeps this in the URL,
-// here it's a single persisted preference shared by Detail and Filters.
+// Selected availability country — the web keeps this in the URL, here it's a
+// single persisted preference shared by Detail and Filters. Defaults to the
+// device region (when supported) via ApiConfig.DEFAULT_COUNTRY, else Egypt.
 class CountryPrefs(private val context: Context) {
     val country: Flow<String> = context.dataStore.data
         .map { it[COUNTRY_KEY] ?: ApiConfig.DEFAULT_COUNTRY }

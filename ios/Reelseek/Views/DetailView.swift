@@ -212,13 +212,14 @@ struct DetailView: View {
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 // Same country switcher as the web detail page (TitleDetails.tsx).
+                // Menu (not segmented) so all supported countries fit.
                 Picker("Country", selection: $country) {
                     ForEach(APIConfig.countries, id: \.code) { c in
-                        Text(c.code).tag(c.code)
+                        Text(c.label).tag(c.code)
                     }
                 }
-                .pickerStyle(.segmented)
-                .frame(width: 150)
+                .pickerStyle(.menu)
+                .tint(Theme.accent)
             }
 
             if available.isEmpty {

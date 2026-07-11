@@ -37,13 +37,13 @@ struct FiltersSheet: View {
                     }
                     .pickerStyle(.menu)
 
-                    // Fixed EG/SA/AE list, same as the website (no free text).
+                    // Fixed supported list, same as the website (no free text).
                     Picker("Country", selection: $vm.query.country) {
                         ForEach(APIConfig.countries, id: \.code) { c in
-                            Text(c.code).tag(c.code)
+                            Text(c.label).tag(c.code)
                         }
                     }
-                    .pickerStyle(.segmented)
+                    .pickerStyle(.menu)
                 }
 
                 Section("Year") {

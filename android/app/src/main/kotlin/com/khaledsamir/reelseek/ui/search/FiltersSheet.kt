@@ -133,23 +133,17 @@ fun FiltersSheet(viewModel: SearchViewModel, onDismiss: () -> Unit) {
             }
 
             FilterSection("Country") {
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                    ApiConfig.COUNTRIES.forEachIndexed { index, (code, _) ->
-                        SegmentedButton(
-                            selected = viewModel.query.country == code,
-                            onClick = { viewModel.query = viewModel.query.copy(country = code) },
-                            shape = SegmentedButtonDefaults.itemShape(index, ApiConfig.COUNTRIES.size),
-                            colors = SegmentedButtonDefaults.colors(
-                                activeContainerColor = Theme.Accent.copy(alpha = 0.18f),
-                                activeContentColor = Theme.Accent,
-                                inactiveContainerColor = Theme.Surface2,
-                                inactiveContentColor = Theme.TextPrimary
-                            )
-                        ) {
-                            Text(code)
-                        }
+                DropdownSelector(
+                    current = ApiConfig.COUNTRIES
+                        .firstOrNull { it.first == viewModel.query.country }?.second
+                        ?: viewModel.query.country,
+                    options = ApiConfig.COUNTRIES.map { it.second },
+                    onSelect = { index ->
+                        viewModel.query = viewModel.query.copy(
+                            country = ApiConfig.COUNTRIES[index].first
+                        )
                     }
-                }
+                )
             }
 
             FilterSection("Year") {

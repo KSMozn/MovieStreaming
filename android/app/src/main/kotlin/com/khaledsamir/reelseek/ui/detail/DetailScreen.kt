@@ -28,9 +28,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -60,6 +57,7 @@ import com.khaledsamir.reelseek.model.ProviderAvailability
 import com.khaledsamir.reelseek.network.ApiConfig
 import com.khaledsamir.reelseek.ui.DetailRoute
 import com.khaledsamir.reelseek.ui.PersonRoute
+import com.khaledsamir.reelseek.ui.components.CountryDropdown
 import com.khaledsamir.reelseek.ui.components.MediaBadge
 import com.khaledsamir.reelseek.ui.components.RemoteImage
 import com.khaledsamir.reelseek.ui.reelseekApp
@@ -342,24 +340,8 @@ private fun AvailabilityBlock(
                 color = Theme.TextPrimary
             )
             Spacer(Modifier.weight(1f))
-            // Same country switcher as the web detail page (TitleDetails.tsx).
-            SingleChoiceSegmentedButtonRow {
-                ApiConfig.COUNTRIES.forEachIndexed { index, (code, _) ->
-                    SegmentedButton(
-                        selected = country == code,
-                        onClick = { onCountryChange(code) },
-                        shape = SegmentedButtonDefaults.itemShape(index, ApiConfig.COUNTRIES.size),
-                        colors = SegmentedButtonDefaults.colors(
-                            activeContainerColor = Theme.Accent.copy(alpha = 0.18f),
-                            activeContentColor = Theme.Accent,
-                            inactiveContainerColor = Theme.Surface2,
-                            inactiveContentColor = Theme.TextSecondary
-                        )
-                    ) {
-                        Text(code, fontSize = 11.sp)
-                    }
-                }
-            }
+            // Dropdown (not segmented) so all supported countries fit.
+            CountryDropdown(selected = country, onSelect = onCountryChange)
         }
 
         val available = availability?.providers?.filter { it.available }.orEmpty()

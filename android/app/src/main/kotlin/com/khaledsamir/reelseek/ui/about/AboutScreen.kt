@@ -15,6 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import android.net.Uri
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -134,11 +136,34 @@ fun AboutScreen(navController: NavController) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier
-                        .clickable { uriHandler.openUri("https://ksmozn.github.io/MovieStreaming/privacy") }
+                        .clickable { uriHandler.openUri("https://reelseek.co/privacy") }
                         .padding(top = 4.dp)
                 ) {
                     Icon(Icons.Default.OpenInNew, contentDescription = null, tint = Theme.Accent, modifier = Modifier.size(14.dp))
                     Text("Full privacy policy", fontSize = 13.sp, color = Theme.Accent)
+                }
+            }
+
+            Section("Feedback") {
+                Text(
+                    "Found a bug, want a feature, or spotted wrong availability? We'd love to hear from you.",
+                    fontSize = 14.sp,
+                    color = Theme.TextSecondary
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier
+                        .clickable {
+                            uriHandler.openUri(
+                                "mailto:eng_khalidsamir@yahoo.com" +
+                                    "?subject=" + Uri.encode("ReelSeek Feedback (Android)")
+                            )
+                        }
+                        .padding(top = 4.dp)
+                ) {
+                    Icon(Icons.Default.Email, contentDescription = null, tint = Theme.Accent, modifier = Modifier.size(14.dp))
+                    Text("Send feedback", fontSize = 13.sp, color = Theme.Accent)
                 }
             }
 
