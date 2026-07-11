@@ -93,6 +93,7 @@ const FOOTER_GROUPS: { title: string; links: { label: string; href: string }[] }
     title: "Trust",
     links: [
       { label: "Data sources", href: "/data-sources" },
+      { label: "Feedback", href: "/feedback" },
       { label: "Press", href: "/press" },
       { label: "Support", href: "/support" },
       { label: "Privacy", href: "/privacy" },

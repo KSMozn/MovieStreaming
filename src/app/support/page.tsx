@@ -49,17 +49,21 @@ export default function SupportPage() {
       <Section title="Contact">
         <Prose>
           <p>
-            Reach the team through the repository’s issue tracker at{" "}
+            The quickest way to reach us is the{" "}
+            <Link href="/feedback" className="text-accent underline">
+              feedback form
+            </Link>{" "}
+            — use it to report a bug, request a feature, or flag incorrect
+            availability. You can also open an issue on the{" "}
             <a
               href="https://github.com/KSMozn/MovieStreaming/issues"
               target="_blank"
               rel="noreferrer noopener"
               className="text-accent underline"
             >
-              github.com/KSMozn/MovieStreaming/issues
+              repository issue tracker
             </a>
-            . A dedicated support email will be published here once
-            available.
+            .
           </p>
         </Prose>
       </Section>
