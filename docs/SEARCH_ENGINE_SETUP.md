@@ -85,3 +85,36 @@ curl -s -o /dev/null -w "%{http_code}  logo asset\n" https://reelseek.co/brand/i
 For authoritative verification, use Search Console's URL Inspection (live
 test) and Bing's URL inspection, which fetch from real crawler
 infrastructure.
+
+## Enabling geo auto-detect (Cloudflare)
+
+The detail pages default the country selector to the visitor's country
+(via Cloudflare's `CF-IPCountry` header) when it's a supported market,
+falling back to Egypt. This stays dormant until the DNS records are
+proxied — the header is simply absent otherwise, so everyone defaults to
+EG with no code change. To turn it on:
+
+1. **Cloudflare → reelseek.co → SSL/TLS → Overview:** set encryption mode
+   to **Full (strict)**. (Google's managed cert on the Cloud Run origin is
+   publicly trusted, so strict works. Do NOT use "Flexible" — it causes an
+   HTTP→HTTPS redirect loop against Cloud Run.)
+2. **Cloudflare → DNS:** switch the eight apex `A`/`AAAA` records from
+   "DNS only" (grey cloud) to **Proxied** (orange cloud). Keep the
+   `google-site-verification` TXT record.
+3. Wait a few minutes, then confirm the header arrives and geo works:
+   ```bash
+   curl -s -H "CF-IPCountry: US" https://reelseek.co/movie/27205 \
+     | grep -o '<option value="US" selected'
+   # → should print: <option value="US" selected
+   ```
+   (Cloudflare sets `CF-IPCountry` from the real client IP in production;
+   the manual header above just proves the app honours it.)
+
+Notes:
+- Cloudflare does not cache HTML by default, so per-country initial HTML
+  is not wrongly shared between visitors. Do not add a Cache Rule that
+  caches HTML on the detail routes.
+- Canonical URLs stay country-agnostic (`/movie/<id>`), so geo defaulting
+  does not create duplicate indexable URLs.
+- To revert, flip the records back to "DNS only"; the app falls back to
+  EG automatically.
