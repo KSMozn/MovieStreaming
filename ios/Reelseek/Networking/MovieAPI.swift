@@ -55,6 +55,11 @@ enum MovieAPI {
         try await APIClient.shared.get("/api/people/search", query: ["q": name])
     }
 
+    /// Person detail + filmography — mirrors the web /person/[personId] page.
+    static func person(_ personId: Int) async throws -> Person {
+        try await APIClient.shared.get("/api/people/\(personId)")
+    }
+
     /// Instant title search — autocomplete style. Returns lightweight items
     /// matching the web's `/api/movies/search` endpoint.
     static func searchMovies(_ name: String) async throws -> [DiscoverResult] {

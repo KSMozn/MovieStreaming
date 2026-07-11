@@ -26,4 +26,13 @@ final class DetailViewModel {
             self.errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
         }
     }
+
+    /// Country switch: details are unchanged, only availability moves.
+    func reloadAvailability(tmdbId: Int, mediaType: MediaType, country: String) async {
+        availability = try? await MovieAPI.availability(
+            tmdbId: tmdbId,
+            mediaType: mediaType,
+            country: country
+        )
+    }
 }

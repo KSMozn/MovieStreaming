@@ -9,6 +9,9 @@ struct DetailView: View {
     @State private var vm = DetailViewModel()
     @Environment(\.modelContext) private var modelContext
     @Query private var watchlist: [WatchlistItem]
+    // Persisted availability country (EG/SA/AE), shared with FiltersSheet —
+    // the web keeps this in the URL, here it's an app-wide preference.
+    @AppStorage("country") private var country: String = APIConfig.defaultCountry
 
     private var isInWatchlist: Bool {
         let key = "\(mediaType.rawValue)-\(tmdbId)"
@@ -46,9 +49,17 @@ struct DetailView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(for: CastMember.self) { c in
+            PersonView(personId: c.personId)
+        }
         .task {
-            await vm.load(tmdbId: tmdbId, mediaType: mediaType, country: APIConfig.defaultCountry)
+            await vm.load(tmdbId: tmdbId, mediaType: mediaType, country: country)
             recordView()
+        }
+        .onChange(of: country) { _, newCountry in
+            Task {
+                await vm.reloadAvailability(tmdbId: tmdbId, mediaType: mediaType, country: newCountry)
+            }
         }
     }
 
@@ -195,9 +206,20 @@ struct DetailView: View {
     private func availabilityBlock(_ a: Availability) -> some View {
         let available = a.providers.filter { $0.available }
         return VStack(alignment: .leading, spacing: 8) {
-            Text("Watch in \(a.country)")
-                .font(.headline)
-                .foregroundStyle(Theme.textPrimary)
+            HStack {
+                Text("Watch in \(a.country)")
+                    .font(.headline)
+                    .foregroundStyle(Theme.textPrimary)
+                Spacer()
+                // Same country switcher as the web detail page (TitleDetails.tsx).
+                Picker("Country", selection: $country) {
+                    ForEach(APIConfig.countries, id: \.code) { c in
+                        Text(c.code).tag(c.code)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 150)
+            }
 
             if available.isEmpty {
                 Text("Not available on tracked providers in \(a.country).")
@@ -258,23 +280,27 @@ struct DetailView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(alignment: .top, spacing: 10) {
                         ForEach(cast.prefix(15)) { c in
-                            VStack(spacing: 4) {
-                                RemoteImage(urlString: c.profileUrl)
-                                    .frame(width: 64, height: 64)
-                                    .clipShape(Circle())
-                                Text(c.name)
-                                    .font(.system(size: 11, weight: .medium))
-                                    .multilineTextAlignment(.center)
-                                    .lineLimit(2)
-                                if let ch = c.character {
-                                    Text(ch)
-                                        .font(.system(size: 10))
-                                        .foregroundStyle(Theme.textMuted)
+                            // Tappable, like CastList on the website.
+                            NavigationLink(value: c) {
+                                VStack(spacing: 4) {
+                                    RemoteImage(urlString: c.profileUrl)
+                                        .frame(width: 64, height: 64)
+                                        .clipShape(Circle())
+                                    Text(c.name)
+                                        .font(.system(size: 11, weight: .medium))
                                         .multilineTextAlignment(.center)
-                                        .lineLimit(1)
+                                        .lineLimit(2)
+                                    if let ch = c.character, !ch.isEmpty {
+                                        Text(ch)
+                                            .font(.system(size: 10))
+                                            .foregroundStyle(Theme.textMuted)
+                                            .multilineTextAlignment(.center)
+                                            .lineLimit(1)
+                                    }
                                 }
+                                .frame(width: 84)
                             }
-                            .frame(width: 84)
+                            .buttonStyle(.plain)
                         }
                     }
                 }

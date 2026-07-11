@@ -58,3 +58,30 @@ struct PersonSearchResult: Codable, Identifiable, Hashable {
 
     var id: Int { personId }
 }
+
+struct PersonCredit: Codable, Identifiable, Hashable {
+    let tmdbId: Int
+    let mediaType: MediaType
+    let title: String
+    let character: String?
+    let releaseYear: String?
+    let releaseDate: String?
+    let posterUrl: String?
+    let voteAverage: Double?
+    let popularity: Double
+
+    var id: String { "\(mediaType.rawValue)-\(tmdbId)" }
+}
+
+struct Person: Codable {
+    let personId: Int
+    let name: String
+    let imdbId: String?
+    let biography: String
+    let birthday: String?
+    let deathday: String?
+    let placeOfBirth: String?
+    let knownForDepartment: String?
+    let profileUrl: String?
+    let credits: [PersonCredit]
+}

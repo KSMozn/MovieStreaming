@@ -18,6 +18,14 @@ final class SearchViewModel {
     private var searchTask: Task<Void, Never>?
     private var personTask: Task<Void, Never>?
 
+    init() {
+        // Default the country filter to the persisted preference (@AppStorage
+        // in DetailView/FiltersSheet writes the same UserDefaults key).
+        if let saved = UserDefaults.standard.string(forKey: "country") {
+            query.country = saved
+        }
+    }
+
     func loadGenres() async {
         if !genres.isEmpty { return }
         do {

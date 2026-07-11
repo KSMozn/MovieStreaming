@@ -10,4 +10,11 @@ enum APIConfig {
     }()
 
     static let defaultCountry = "EG"
+
+    /// Same fixed list as the website (TitleDetails.tsx COUNTRIES).
+    static let countries: [(code: String, label: String)] = [
+        ("EG", "Egypt"),
+        ("SA", "Saudi Arabia"),
+        ("AE", "United Arab Emirates")
+    ]
 }

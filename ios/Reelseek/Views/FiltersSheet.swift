@@ -4,6 +4,8 @@ struct FiltersSheet: View {
     @Bindable var vm: SearchViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var personQuery: String = ""
+    // Shared with DetailView so the chosen country follows the user around.
+    @AppStorage("country") private var storedCountry: String = APIConfig.defaultCountry
 
     var body: some View {
         NavigationStack {
@@ -35,14 +37,13 @@ struct FiltersSheet: View {
                     }
                     .pickerStyle(.menu)
 
-                    HStack {
-                        Text("Country")
-                        Spacer()
-                        TextField("EG", text: $vm.query.country)
-                            .multilineTextAlignment(.trailing)
-                            .textInputAutocapitalization(.characters)
-                            .frame(width: 80)
+                    // Fixed EG/SA/AE list, same as the website (no free text).
+                    Picker("Country", selection: $vm.query.country) {
+                        ForEach(APIConfig.countries, id: \.code) { c in
+                            Text(c.code).tag(c.code)
+                        }
                     }
+                    .pickerStyle(.segmented)
                 }
 
                 Section("Year") {
@@ -128,6 +129,7 @@ struct FiltersSheet: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Search") {
+                        storedCountry = vm.query.country
                         vm.runSearch()
                         dismiss()
                     }
