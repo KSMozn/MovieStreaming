@@ -28,6 +28,12 @@ describe("route-level SEO policies", () => {
     expect(read("src/app/page.tsx")).not.toContain('"use client"');
   });
 
+  test("sitemap renders at request time (env vars absent during Cloud Build)", () => {
+    // Build-time prerender would freeze an empty catalogue when TMDB_API_KEY
+    // is unset in the build environment; force-dynamic runs it per-request.
+    expect(read("src/app/sitemap.ts")).toContain('dynamic = "force-dynamic"');
+  });
+
   test("required public routes exist", () => {
     for (const route of [
       "about",
