@@ -1,4 +1,7 @@
-# Streamly — Movie Streaming Discovery
+# ReelSeek — streaming discovery
+
+> Repo name `MovieStreaming` and the Cloud Run service name are retained
+> internal legacy identifiers; the public brand is **ReelSeek**.
 
 A small Next.js app that lets you search any movie and shows where to stream it
 across **Netflix, OSN+, Amazon Prime Video, Shahid, and Watch It**, alongside

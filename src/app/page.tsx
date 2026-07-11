@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SearchBar } from "@/components/SearchBar";
+import { PrimaryButton, SecondaryButton } from "@/components/brand/Button";
 import type { MediaType } from "@/types";
 
 interface Recent {
@@ -27,17 +28,33 @@ export default function HomePage() {
   return (
     <div className="space-y-10">
       <section className="text-center pt-6">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-          Find where to watch any movie or TV show
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+          Find what <span className="text-accent">to watch.</span>
         </h1>
-        <p className="text-white/60 mt-2 max-w-xl mx-auto">
-          Search a title and we&apos;ll show ratings, cast, and which streaming
-          service has it in your country.
+        <p className="text-white/60 mt-3 max-w-xl mx-auto">
+          Discover movies and TV shows and see where they are streaming in
+          your country.
         </p>
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <PrimaryButton href="/search">Explore ReelSeek →</PrimaryButton>
+          <SecondaryButton href="#get-the-app">Get the App</SecondaryButton>
+        </div>
       </section>
 
       <section>
         <SearchBar />
+      </section>
+
+      <section
+        id="get-the-app"
+        className="bg-surface border border-border rounded-xl p-6 text-center space-y-2"
+      >
+        <h2 className="text-lg font-semibold">Get the App</h2>
+        <p className="text-sm text-white/60 max-w-md mx-auto">
+          The ReelSeek app for iPhone and Android brings search, ratings, cast,
+          and country-by-country streaming availability to your pocket — with an
+          on-device watchlist. Coming soon to the App Store and Google Play.
+        </p>
       </section>
 
       {recents.length > 0 && (

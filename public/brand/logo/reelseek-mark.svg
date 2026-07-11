@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ReelSeek">
+  <!-- Official ReelSeek mark, light-background variant: deep-navy magnifier, warm-amber play -->
+  <circle cx="27" cy="27" r="19" fill="none" stroke="#0D1B2A" stroke-width="7"/>
+  <path d="M21 17.5 L39.5 27 L21 36.5 Z" fill="#F5A623"/>
+  <path d="M41.5 41.5 L53 53" stroke="#0D1B2A" stroke-width="9" stroke-linecap="round"/>
+</svg>

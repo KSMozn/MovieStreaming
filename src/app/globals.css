@@ -2,9 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  background: #0b0d12;
-  color: #e6e8ee;
+/*
+ * ReelSeek brand tokens — single source of truth for colors on the web.
+ * Official palette (brand board): Deep Navy #0D1B2A, Charcoal #222831,
+ * Warm Amber #F5A623, Light Neutral #F7F8FA.
+ * Derived shades (documented deviations, not in the official palette):
+ * --brand-surface-elevated and --brand-border are lightened charcoal steps
+ * needed for card layering; --brand-error/success are functional colors
+ * absent from the brand board.
+ */
+:root {
+  --brand-primary: #0d1b2a; /* Deep Navy */
+  --brand-charcoal: #222831; /* Charcoal */
+  --brand-accent: #f5a623; /* Warm Amber */
+  --brand-neutral: #f7f8fa; /* Light Neutral */
+
+  --brand-background: var(--brand-primary);
+  --brand-surface: var(--brand-charcoal);
+  --brand-surface-elevated: #2b3440; /* derived */
+  --brand-border: #364252; /* derived */
+  --brand-text-primary: var(--brand-neutral);
+  --brand-text-secondary: rgba(247, 248, 250, 0.65);
+  --brand-text-muted: rgba(247, 248, 250, 0.42);
+
+  --brand-success: #34c98e; /* derived functional */
+  --brand-warning: var(--brand-accent);
+  --brand-error: #ef5350; /* derived functional */
+}
+
+html,
+body {
+  background: var(--brand-background);
+  color: var(--brand-text-primary);
   min-height: 100%;
 }
 
@@ -12,4 +41,7 @@ html, body {
 
 a { color: inherit; text-decoration: none; }
 
-::selection { background: #f5c518; color: #0b0d12; }
+::selection {
+  background: var(--brand-accent);
+  color: var(--brand-primary);
+}

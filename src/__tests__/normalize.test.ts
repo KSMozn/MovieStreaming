@@ -2,7 +2,7 @@ import { buildAvailabilityFromSources } from "@/lib/watchmodeClient";
 import { normalizeTmdbMovie } from "@/lib/tmdbClient";
 
 describe("buildAvailabilityFromSources", () => {
-  it("always emits 7 provider cards in fixed order", () => {
+  it("always emits all tracked provider cards in fixed order", () => {
     const out = buildAvailabilityFromSources([], "EG", "EG");
     expect(out.providers.map((p) => p.providerKey)).toEqual([
       "netflix",
@@ -10,6 +10,7 @@ describe("buildAvailabilityFromSources", () => {
       "amazon_prime_video",
       "shahid",
       "watch_it",
+      "tod",
       "disney_plus",
       "apple_tv_plus"
     ]);
