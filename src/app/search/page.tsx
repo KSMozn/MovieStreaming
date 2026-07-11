@@ -10,6 +10,18 @@ import type { ProviderKey } from "@/types";
 
 export const dynamic = "force-dynamic";
 
+// Search produces unbounded query-parameter combinations; none of them
+// should be indexed, but result links must stay followable. The canonical
+// collapses every query state onto /search. robots.txt deliberately does
+// NOT block /search so crawlers can see this directive.
+export const metadata = {
+  title: "Advanced search",
+  description:
+    "Search movies and TV shows by title, genre, year, rating, cast, streaming provider, and country.",
+  alternates: { canonical: "/search" },
+  robots: { index: false, follow: true }
+};
+
 interface PageProps {
   searchParams: Record<string, string | string[] | undefined>;
 }
@@ -34,7 +46,7 @@ async function runSearch(
     const s = getStr(v);
     if (s) sp.set(k, s);
   }
-  // Don't fire a request if no filters at all
+  // Don’t fire a request if no filters at all
   if (sp.toString() === "") return null;
   const url = `${buildBaseUrl()}/api/discover?${sp.toString()}`;
   try {

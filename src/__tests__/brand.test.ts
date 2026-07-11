@@ -8,7 +8,7 @@ const root = process.cwd();
 function grepSrc(pattern: string): string {
   try {
     return execSync(
-      `grep -rn "${pattern}" src/ public/ --include='*.ts' --include='*.tsx' --include='*.css' --include='*.svg' --exclude='brand.test.ts' || true`,
+      `grep -rn "${pattern}" src/ public/ --include='*.ts' --include='*.tsx' --include='*.css' --include='*.svg' --exclude-dir='__tests__' || true`,
       { cwd: root, encoding: "utf8" }
     ).trim();
   } catch {
@@ -22,12 +22,13 @@ describe("ReelSeek brand validation", () => {
   });
 
   test("no public MovieStreaming branding in app code", () => {
-    // The GitHub Pages privacy URL contains the legacy repo name and is an
-    // intentionally retained infrastructure identifier.
+    // The GitHub Pages privacy URL and the repository URL contain the legacy
+    // repo name; both are intentionally retained infrastructure identifiers.
     const hits = grepSrc("MovieStreaming")
       .split("\n")
       .filter(Boolean)
-      .filter((line) => !line.includes("ksmozn.github.io/MovieStreaming"));
+      .filter((line) => !line.includes("ksmozn.github.io/MovieStreaming"))
+      .filter((line) => !line.includes("github.com/KSMozn/MovieStreaming"));
     expect(hits).toEqual([]);
   });
 
@@ -48,7 +49,8 @@ describe("ReelSeek brand validation", () => {
 
   test("metadata uses ReelSeek and the official theme color", () => {
     const layout = readFileSync(join(root, "src/app/layout.tsx"), "utf8");
-    expect(layout).toContain("brand.name");
+    expect(layout).toContain("site.name");
+    expect(layout).toContain("ReelSeek");
     expect(brand.name).toBe("ReelSeek");
     expect(brand.colors.primary.toUpperCase()).toBe("#0D1B2A");
     expect(brand.colors.accent.toUpperCase()).toBe("#F5A623");

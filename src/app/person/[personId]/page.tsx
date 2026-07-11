@@ -1,70 +1,77 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { Skeleton } from "@/components/Skeletons";
+import { notFound } from "next/navigation";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { Breadcrumbs } from "@/components/marketing/Page";
+import { getPerson } from "@/server/people";
+import { personSchema } from "@/lib/seo/schema";
+import { pageMetadata, truncateDescription } from "@/lib/seo/metadata";
 import type { PersonDto } from "@/types";
 
-export default function PersonPage() {
-  const { personId } = useParams<{ personId: string }>();
-  const [person, setPerson] = useState<PersonDto | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    setError(null);
-    fetch(`/api/people/${personId}`)
-      .then(async (r) => {
-        if (!r.ok) throw new Error(`Failed to load person (${r.status})`);
-        return (await r.json()) as PersonDto;
-      })
-      .then((p) => alive && setPerson(p))
-      .catch((e) => alive && setError((e as Error).message))
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
-  }, [personId]);
+interface Props {
+  params: { personId: string };
+}
 
-  if (error) {
-    return (
-      <div className="bg-surface border border-border rounded-xl p-6">
-        <h1 className="font-semibold mb-2">Something went wrong</h1>
-        <p className="text-sm text-white/60">{error}</p>
-      </div>
-    );
-  }
+function parseId(raw: string): number | null {
+  if (!/^\d{1,10}$/.test(raw)) return null;
+  const id = Number.parseInt(raw, 10);
+  return Number.isFinite(id) && id > 0 ? id : null;
+}
 
-  if (loading || !person) {
-    return (
-      <div className="grid md:grid-cols-[220px_1fr] gap-6">
-        <Skeleton className="w-full aspect-[2/3]" />
-        <div className="space-y-3">
-          <Skeleton className="h-8 w-1/2" />
-          <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-24 w-full" />
-        </div>
-      </div>
-    );
-  }
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const id = parseId(params.personId);
+  const person = id ? await getPerson(id) : null;
+  if (!person) return { robots: { index: false, follow: false } };
+  return pageMetadata({
+    title: `${person.name} — Movies and TV Shows`,
+    description: truncateDescription(
+      person.biography ||
+        `${person.name}'s filmography with links to where each title is streaming in your country.`
+    ),
+    path: `/person/${person.personId}`,
+    ogType: "profile",
+    images: person.profileUrl
+      ? [{ url: person.profileUrl, alt: person.name }]
+      : undefined
+  });
+}
 
-  const ageOrLifespan = (() => {
-    if (!person.birthday) return null;
-    const birth = new Date(person.birthday);
-    const end = person.deathday ? new Date(person.deathday) : new Date();
-    const years = Math.floor(
-      (end.getTime() - birth.getTime()) / (365.2425 * 24 * 3600 * 1000)
-    );
-    return person.deathday
-      ? `${person.birthday} – ${person.deathday} (aged ${years})`
-      : `${person.birthday} (age ${years})`;
-  })();
+// UTC-based age math (no local-timezone drift on date-only strings).
+function ageOrLifespan(person: PersonDto): string | null {
+  const parse = (d: string | null) =>
+    d && /^\d{4}-\d{2}-\d{2}$/.test(d) ? Date.parse(`${d}T00:00:00Z`) : NaN;
+  const birth = parse(person.birthday);
+  if (!Number.isFinite(birth)) return null;
+  const end = Number.isFinite(parse(person.deathday))
+    ? parse(person.deathday)
+    : Date.now();
+  const years = Math.floor((end - birth) / (365.2425 * 24 * 3600 * 1000));
+  return person.deathday
+    ? `${person.birthday} – ${person.deathday} (aged ${years})`
+    : `${person.birthday} (age ${years})`;
+}
+
+export default async function PersonPage({ params }: Props) {
+  const id = parseId(params.personId);
+  if (!id) notFound();
+  const person = await getPerson(id);
+  if (!person) notFound();
+
+  const lifespan = ageOrLifespan(person);
 
   return (
     <div className="space-y-10">
+      <JsonLd data={personSchema(person)} />
+      <Breadcrumbs
+        items={[
+          { name: "Home", path: "/" },
+          { name: person.name, path: `/person/${person.personId}` }
+        ]}
+      />
+
       <section className="grid md:grid-cols-[220px_1fr] gap-6">
         <div className="bg-surface border border-border rounded-xl overflow-hidden">
           <div className="aspect-[2/3] bg-surface2">
@@ -87,10 +94,10 @@ export default function PersonPage() {
                 {person.knownForDepartment}
               </div>
             )}
-            {ageOrLifespan && (
+            {lifespan && (
               <div>
                 <span className="text-white/40">Born: </span>
-                {ageOrLifespan}
+                {lifespan}
               </div>
             )}
             {person.placeOfBirth && (
@@ -107,9 +114,7 @@ export default function PersonPage() {
                   rel="noreferrer noopener"
                   className="inline-flex items-center gap-2 mt-1 px-2.5 py-1 rounded-md bg-accent text-bg text-xs font-semibold"
                 >
-                  <span className="text-[10px] font-extrabold tracking-wider">
-                    IMDb
-                  </span>
+                  <span className="text-[10px] font-extrabold tracking-wider">IMDb</span>
                   View on IMDb ↗
                 </a>
               </div>
@@ -148,6 +153,7 @@ export default function PersonPage() {
                         <img
                           src={c.posterUrl}
                           alt=""
+                          loading="lazy"
                           className="w-full h-full object-cover"
                         />
                       ) : null}
@@ -167,9 +173,7 @@ export default function PersonPage() {
                       )}
                     </div>
                     <div className="p-2">
-                      <div className="text-xs font-medium line-clamp-2">
-                        {c.title}
-                      </div>
+                      <div className="text-xs font-medium line-clamp-2">{c.title}</div>
                       <div className="text-[11px] text-white/50">
                         {c.releaseYear ?? "—"}
                       </div>

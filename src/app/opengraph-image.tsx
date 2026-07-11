@@ -20,7 +20,7 @@ export default async function OgImage() {
     (
       <OgCard
         title={brand.headline}
-        subtitle="Know where to stream it — across your country's services."
+        subtitle="Know where to stream it — across your country’s services."
       />
     ),
     {

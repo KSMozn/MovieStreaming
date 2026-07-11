@@ -1,9 +1,24 @@
-"use client";
+import type { Metadata } from "next";
+import { buildTitleMetadata, TitlePageBody } from "@/components/title/TitlePage";
 
-import { useParams } from "next/navigation";
-import { TitleDetails } from "@/components/TitleDetails";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export default function TvPage() {
-  const { tmdbId } = useParams<{ tmdbId: string }>();
-  return <TitleDetails tmdbId={tmdbId} mediaType="tv" />;
+interface Props {
+  params: { tmdbId: string };
+  searchParams: { country?: string };
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  return buildTitleMetadata(params.tmdbId, "tv");
+}
+
+export default function TvPage({ params, searchParams }: Props) {
+  return (
+    <TitlePageBody
+      rawId={params.tmdbId}
+      mediaType="tv"
+      searchParams={searchParams}
+    />
+  );
 }

@@ -1,6 +1,6 @@
-# Reelseek — Android
+# ReelSeek — Android
 
-Native Android client (Kotlin + Jetpack Compose) for the Reelseek streaming-availability
+Native Android client (Kotlin + Jetpack Compose) for the ReelSeek streaming-availability
 service. Mirrors the website and the iOS app in `../ios`, consuming the same keyless JSON
 API on Cloud Run — no API keys ship in the app.
 
