@@ -81,7 +81,7 @@ export function AdvancedSearchForm({ initial }: Props) {
     const ctrl = new AbortController();
     async function run() {
       const q = debouncedActor.trim();
-      // If the chosen person's name is what we have, don't research
+      // If the chosen person’s name is what we have, don’t research
       if (!q || values.personId) {
         setPeople([]);
         return;

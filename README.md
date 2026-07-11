@@ -1,135 +1,94 @@
-# ReelSeek — streaming discovery
+# ReelSeek
 
-> Repo name `MovieStreaming` and the Cloud Run service name are retained
-> internal legacy identifiers; the public brand is **ReelSeek**.
+**Find what to watch. Know where to stream it.**
 
-A small Next.js app that lets you search any movie and shows where to stream it
-across **Netflix, OSN+, Amazon Prime Video, Shahid, and Watch It**, alongside
-the IMDb rating, cast, genres, poster, and description.
+ReelSeek is a movie and TV **streaming-discovery service** for Egypt, Saudi
+Arabia and the UAE. It searches any title, shows ratings, cast and details,
+and answers the real question — *which streaming service carries this in my
+country?* — across **Netflix, OSN+, Amazon Prime Video, Shahid, Watch It,
+TOD, Disney+ and Apple TV+**, labelled as subscription, rent or buy.
 
-Default country is **Egypt (EG)**; Saudi Arabia and UAE are also selectable.
+ReelSeek does **not** host or stream video, requires no account, and is not
+affiliated with any provider.
 
-## Tech
+> **Internal legacy identifiers:** the repository name `MovieStreaming`, the
+> Cloud Run service name `movie-streaming`, the iOS target/folder `Reelseek`
+> and the bundle/application id `com.khaledsamir.reelseek` predate the
+> ReelSeek branding and are intentionally retained. The public brand is
+> always **ReelSeek**.
 
-- Next.js 14 (App Router) + React 18 + TypeScript (strict)
-- Tailwind CSS
-- TMDb (search, metadata, cast, poster)
-- Watchmode (streaming availability, optional start/end dates and provider category)
-- OMDb (IMDb rating fallback)
-- Jest + ts-jest for unit tests
+## What's in this repo
 
-> Database (PostgreSQL/Prisma) and Redis are intentionally **not** used in the MVP.
-> The shape is ready to be extended with caching/favorites later.
+| Path | What it is |
+|---|---|
+| `src/` | Next.js 14 (App Router) web app: public site, SEO layer, and the JSON API |
+| `ios/` | Native iOS app (SwiftUI, iOS 17+, XcodeGen — `ios/project.yml` is the source of truth) |
+| `android/` | Native Android app (Kotlin + Jetpack Compose, Gradle version catalog) |
+| `public/brand/` | Official ReelSeek logo/icon assets |
+| `docs/` | GitHub Pages (legacy privacy URL) + engineering docs (SEO setup, AI crawler policy, authority plan, public facts) |
+| `.github/workflows/` | CI: web (test+build), Android (lint+test+APK, tagged signed AAB), iOS (simulator build) |
 
-## Setup
+Both mobile apps consume the same keyless JSON API under `/api/*`; no
+third-party API keys ship in any client.
 
-1. **Install dependencies**
+## Architecture
 
-   ```bash
-   npm install
-   ```
+- **Web + API**: Next.js 14, React 18, TypeScript (strict), Tailwind. Server
+  components render all public pages (home, movie/TV/person, marketing,
+  Arabic `/ar` pages); small client islands handle interactivity
+  (availability country switching, local recents/watchlist).
+- **Data**: TMDb (metadata, cast, provider mappings), Watchmode
+  (supplemental availability), OMDb (IMDb ratings) — normalized server-side
+  into the DTOs in `src/types/index.ts`. No database by design; short-lived
+  in-process caching only.
+- **SEO layer**: canonical config in `src/lib/site.ts`; metadata builders in
+  `src/lib/seo/`; JSON-LD schema builders + safe serialization; `robots.ts`,
+  `sitemap.ts`, `llms.txt`, `llms-full.txt`, Atom feed, IndexNow utility
+  (`npm run indexnow`); public facts single-source in
+  `src/content/publicFacts.ts`.
+- **Brand**: tokens in `src/app/globals.css` (+ `src/lib/brand.ts`), shared
+  by the web app and mirrored in the mobile themes.
 
-2. **Get API keys**
+## Setup (web)
 
-   - TMDb — https://www.themoviedb.org/settings/api (required)
-   - Watchmode — https://api.watchmode.com/ (recommended for streaming data)
-   - OMDb — https://www.omdbapi.com/apikey.aspx (recommended for IMDb rating)
-
-3. **Configure environment**
-
-   Copy the example file and fill in your keys:
-
-   ```bash
-   cp .env.example .env.local
-   ```
-
-   Variables:
-
-   | Name                              | Required | Purpose                                   |
-   | --------------------------------- | -------- | ----------------------------------------- |
-   | `TMDB_API_KEY`                    | yes      | Movie search, metadata, cast              |
-   | `WATCHMODE_API_KEY`               | no\*     | Streaming availability per region         |
-   | `OMDB_API_KEY`                    | no\*     | IMDb rating                               |
-   | `STREAMING_AVAILABILITY_API_KEY`  | no       | Reserved for an alternative provider      |
-   | `DEFAULT_COUNTRY`                 | no       | Default region code (defaults to `EG`)    |
-   | `DATABASE_URL`                    | no       | Reserved for future Postgres caching      |
-
-   \* Without these the app still runs; the corresponding fields fall back to
-   `null` / "Not available" in the UI.
-
-4. **Run dev server**
-
-   ```bash
-   npm run dev
-   ```
-
-   Open http://localhost:3000.
-
-5. **Run tests**
-
-   ```bash
-   npm test
-   ```
-
-## Project layout
-
-```
-src/
-  app/
-    page.tsx                                    # Home (search + recents)
-    movie/[tmdbId]/page.tsx                     # Details page
-    api/movies/search/route.ts                  # GET /api/movies/search?q=
-    api/movies/[tmdbId]/route.ts                # GET /api/movies/:tmdbId
-    api/movies/[tmdbId]/availability/route.ts   # GET …/availability?country=EG
-  components/   # SearchBar, ProviderCard, Badges, CastList, Skeletons
-  lib/          # tmdbClient, watchmodeClient, omdbClient, providers, http, useDebounced
-  types/        # Normalized DTOs
-  __tests__/    # Jest tests for normalization
-public/providers/   # Provider logo SVGs (placeholder marks)
+```bash
+npm install
+cp .env.example .env.local   # add TMDB_API_KEY (required), WATCHMODE/OMDB (recommended)
+npm run dev
 ```
 
-## API contracts
+Checks: `npm test` · `npm run lint` · `npm run typecheck` · `npm run build`
 
-### `GET /api/movies/search?q={query}`
+Key environment variables (see `.env.example` for all): `TMDB_API_KEY`
+(required), `WATCHMODE_API_KEY`, `OMDB_API_KEY`, `DEFAULT_COUNTRY`,
+`NEXT_PUBLIC_SITE_URL` (canonical origin, defaults to
+`https://reelseek.co`), `SEO_INDEXING_ENABLED` (set `false` only on
+previews), `GOOGLE_SITE_VERIFICATION`, `BING_SITE_VERIFICATION`,
+`INDEXNOW_KEY`.
 
-Returns up to 8 normalized search results.
+## Mobile apps
 
-### `GET /api/movies/:tmdbId`
+- **Android** (`android/README.md`): `./gradlew :app:assembleDebug` with JDK
+  17; release signing via gitignored `keystore.properties`; Play submission
+  checklist included.
+- **iOS** (`ios/README.md`): `xcodegen generate` then build `Reelseek.xcodeproj`;
+  App Store submission checklist included.
 
-Returns normalized `MovieDetailsDto` (see `src/types/index.ts`).
+Both apps are feature-complete and in pre-release; store listings are
+pending (do not advertise store links until they exist).
 
-### `GET /api/movies/:tmdbId/availability?country=EG`
+## Deployment
 
-Always returns all 5 provider cards, even when not available. Optional fields
-(`startsAt`, `endsAt`, `providerGenre`, `streamingUrl`, `availabilityType`)
-fall back to `null` and the UI shows "Not available".
+Docker multi-stage build (Next standalone output) → Google Cloud Run
+(`europe-west1`): `gcloud run deploy movie-streaming --source . --region
+europe-west1`. Production domain: `https://reelseek.co` (see
+`docs/SEARCH_ENGINE_SETUP.md` for domain, Search Console, Bing and IndexNow
+setup). Preview deployments must set `SEO_INDEXING_ENABLED=false`.
 
-## Design notes
+## Legal positioning
 
-- **No scraping.** All streaming data comes from Watchmode's official API.
-- **Strict TypeScript** with normalized DTOs — UI components never see raw
-  upstream payloads.
-- **Graceful degradation:** if Watchmode/OMDb keys are missing or fail, the
-  app still renders TMDb metadata and shows "Not available" where appropriate.
-- **Region filtering** via `?country=` (default `EG`); selector supports `EG`,
-  `SA`, `AE`. Add more in `src/app/movie/[tmdbId]/page.tsx`.
-- **Provider mapping** is centralized in `src/lib/providers.ts` — extending the
-  list is one entry per provider.
-- **Caching:** Next.js `fetch` revalidate is set conservatively (60s for search,
-  30 min for availability, 1h for details). Plug Redis/Postgres in later by
-  replacing `fetchJson`'s call sites.
-
-## Extending
-
-- **Add a provider:** append a `ProviderConfig` entry in `src/lib/providers.ts`,
-  drop a logo into `public/providers/`. The UI updates automatically.
-- **Add a country:** extend the `COUNTRIES` array in `src/app/movie/[tmdbId]/page.tsx`.
-- **Persistent recents/favorites:** add Prisma + Postgres and a `favorites`
-  table; replace the `localStorage` block in `src/app/page.tsx` and the
-  recents-write block in the details page.
-
-## Legal
-
-This project uses TMDb, Watchmode, and OMDb under their respective terms of
-service. Logos are placeholder marks; replace with the official press-kit
-artwork before public deployment.
+ReelSeek links to third-party streaming services and displays availability
+compiled from licensed data sources; availability varies by country and can
+change. This product uses the TMDb API but is not endorsed or certified by
+TMDb. Privacy policy and terms live at `/privacy` and `/terms` on the
+production site.

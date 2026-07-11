@@ -1,9 +1,24 @@
-"use client";
+import type { Metadata } from "next";
+import { buildTitleMetadata, TitlePageBody } from "@/components/title/TitlePage";
 
-import { useParams } from "next/navigation";
-import { TitleDetails } from "@/components/TitleDetails";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export default function MoviePage() {
-  const { tmdbId } = useParams<{ tmdbId: string }>();
-  return <TitleDetails tmdbId={tmdbId} mediaType="movie" />;
+interface Props {
+  params: { tmdbId: string };
+  searchParams: { country?: string };
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  return buildTitleMetadata(params.tmdbId, "movie");
+}
+
+export default function MoviePage({ params, searchParams }: Props) {
+  return (
+    <TitlePageBody
+      rawId={params.tmdbId}
+      mediaType="movie"
+      searchParams={searchParams}
+    />
+  );
 }
