@@ -104,7 +104,9 @@ export async function TitlePageBody({
       />
 
       <section className="grid md:grid-cols-[260px_1fr] gap-6">
-        <div className="bg-surface border border-border rounded-xl overflow-hidden">
+        {/* Cap the poster width when the grid collapses to one column on
+            mobile so it never renders full-viewport-tall. */}
+        <div className="bg-surface border border-border rounded-xl overflow-hidden w-full max-w-[240px] mx-auto md:max-w-none md:mx-0">
           <div className="aspect-[2/3] bg-surface2">
             {details.posterUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -116,7 +118,9 @@ export async function TitlePageBody({
             ) : null}
           </div>
         </div>
-        <div className="space-y-4">
+        {/* min-w-0 lets the 1fr column shrink; without it the horizontal cast
+            scroller's content forces the grid wider than the page container. */}
+        <div className="space-y-4 min-w-0">
           <div className="flex items-center gap-2">
             <span
               className={`text-[10px] font-bold tracking-widest px-2 py-0.5 rounded ${
