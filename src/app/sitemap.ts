@@ -5,6 +5,13 @@ import { PROVIDER_CONTENT } from "@/content/providers";
 import { GUIDES } from "@/content/guides";
 import { getPopularIndex } from "@/lib/popularIndex";
 
+// Render at request time, not build time: `gcloud run deploy --source` builds
+// in Cloud Build without runtime env vars (TMDB_API_KEY), so a build-time
+// prerender would freeze an empty catalogue into the image. Runtime rendering
+// + the popular-index in-memory cache (6h TTL) keeps upstream load low.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 // Catalogue policy: we deliberately do NOT enumerate upstream IDs. Title
 // URLs come from the existing cached popular-title index (a curated,
 // bounded set with full metadata), capped defensively. Search URLs, API
