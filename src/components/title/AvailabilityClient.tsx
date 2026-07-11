@@ -8,13 +8,10 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ProviderCard } from "@/components/ProviderCard";
 import { ProviderGridSkeleton } from "@/components/Skeletons";
+import { site } from "@/lib/site";
 import type { AvailabilityDto, MediaType } from "@/types";
 
-const COUNTRIES: { code: string; label: string }[] = [
-  { code: "EG", label: "Egypt" },
-  { code: "SA", label: "Saudi Arabia" },
-  { code: "AE", label: "United Arab Emirates" }
-];
+const COUNTRIES = site.countries.map((c) => ({ code: c.code, label: c.name }));
 
 export function AvailabilityClient({
   tmdbId,

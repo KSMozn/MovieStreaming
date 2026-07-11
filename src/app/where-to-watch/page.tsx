@@ -7,7 +7,7 @@ import { PROVIDER_CONTENT, providerConfigFor } from "@/content/providers";
 export const metadata = pageMetadata({
   title: "Where to Watch Movies and TV Shows",
   description:
-    "How to answer “where can I watch this?” for Egypt, Saudi Arabia and the UAE — check every major streaming service for any title in one search.",
+    "How to answer “where can I watch this?” in your country — check every major streaming service for any title in one search, per market.",
   path: "/where-to-watch"
 });
 

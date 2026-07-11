@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const metadata = pageMetadata({
   title: "TV Shows — Popular and Top Rated",
   description:
-    "Browse popular and top-rated TV series and see where each one is streaming in Egypt, Saudi Arabia or the UAE.",
+    "Browse popular and top-rated TV series and see where each one is streaming in your country.",
   path: "/tv-shows"
 });
 

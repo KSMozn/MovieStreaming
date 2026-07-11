@@ -6,6 +6,7 @@ import { COUNTRY_CONTENT, countryContentBySlug } from "@/content/countries";
 import { providerConfigFor, providerContentBySlug } from "@/content/providers";
 import { guideBySlug } from "@/content/guides";
 import { publicFacts } from "@/content/publicFacts";
+import { withArticle } from "@/lib/site";
 
 export function generateStaticParams() {
   return COUNTRY_CONTENT.map((c) => ({ slug: c.slug }));
@@ -19,8 +20,8 @@ export function generateMetadata({ params }: Props): Metadata {
   const country = countryContentBySlug(params.slug);
   if (!country) return { robots: { index: false, follow: false } };
   return pageMetadata({
-    title: `Streaming Availability in ${country.info.name}`,
-    description: `Find what to watch in ${country.info.name}: which streaming services ReelSeek checks there, how availability differs locally, and how to search the ${country.info.code} catalogue.`,
+    title: `Streaming Availability in ${withArticle(country.info)}`,
+    description: `Find what to watch in ${withArticle(country.info)}: which streaming services ReelSeek checks there, how availability differs locally, and how to search the ${country.info.code} catalogue.`,
     path: `/countries/${country.slug}`
   });
 }
@@ -39,7 +40,7 @@ export default function CountryPage({ params }: Props) {
   return (
     <div className="space-y-10">
       <PageHero
-        title={`Streaming in ${country.info.name}`}
+        title={`Streaming in ${withArticle(country.info)}`}
         lead={country.intro}
         crumbs={[
           { name: "Home", path: "/" },

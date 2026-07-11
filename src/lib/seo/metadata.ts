@@ -13,6 +13,9 @@ export const LOCALIZED_PATHS: Record<string, string> = {
   "/countries/egypt": "/ar/countries/egypt",
   "/countries/saudi-arabia": "/ar/countries/saudi-arabia",
   "/countries/united-arab-emirates": "/ar/countries/united-arab-emirates",
+  "/countries/united-states": "/ar/countries/united-states",
+  "/countries/united-kingdom": "/ar/countries/united-kingdom",
+  "/countries/canada": "/ar/countries/canada",
   "/faq": "/ar/faq",
   "/data-sources": "/ar/data-sources"
 };

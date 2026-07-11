@@ -74,6 +74,66 @@ export const COUNTRY_CONTENT: CountryContent[] = [
       "compare-netflix-shahid-osn-tod-prime-video",
       "why-streaming-availability-changes-by-country"
     ]
+  },
+  {
+    slug: "united-states",
+    intro:
+      "ReelSeek supports the United States, where availability is dominated by the global platforms. The regional Middle-East services ReelSeek also tracks — OSN+, Shahid, Watch It, TOD — do not operate in the US, so they show as unavailable there by design.",
+    landscape: [
+      "In the US, the services that carry titles are the global platforms: Netflix, Amazon Prime Video, Disney+, and Apple TV+. Prime Video and Apple TV also run large rental/purchase stores for recent releases.",
+      "ReelSeek's Middle-East providers (OSN+, Shahid, Watch It, TOD) are region-locked to MENA and are not available in the US; their cards will read \"not available\" on US titles. That's accurate, not a data gap.",
+      "US streaming catalogues are among the world's largest, and licensing windows shift frequently as titles rotate between the major platforms."
+    ],
+    tips: [
+      "Set the country selector to US to see American availability; if you're browsing from the US, ReelSeek can default to it automatically.",
+      "Focus on the four global providers — the regional cards are expected to be empty in this market.",
+      "For a recent release not on any subscription yet, check the rent/buy labels on Prime Video and Apple TV."
+    ],
+    relatedProviderSlugs: ["netflix", "prime-video", "disney-plus", "apple-tv"],
+    relatedGuideSlugs: [
+      "why-streaming-availability-changes-by-country",
+      "find-a-movie-when-you-only-remember-part-of-the-title"
+    ]
+  },
+  {
+    slug: "united-kingdom",
+    intro:
+      "ReelSeek supports the United Kingdom, covering the global streaming platforms. The Middle-East regional services ReelSeek also checks do not operate in the UK, so they appear as unavailable there.",
+    landscape: [
+      "In the UK, Netflix, Amazon Prime Video, Disney+, and Apple TV+ are the services that carry titles, with Prime Video and Apple TV adding transactional rent/buy options.",
+      "ReelSeek's regional providers (OSN+, Shahid, Watch It, TOD) are MENA-only and are not available in the UK; expect their cards to be empty on UK titles.",
+      "UK licensing often differs from both the US and the Middle East — a title on one platform in the US can sit with a different one, or none, in Britain."
+    ],
+    tips: [
+      "Set the country selector to UK for British availability; ReelSeek can default to it automatically when you browse from the UK.",
+      "The four global platforms are the ones to watch in this market.",
+      "Some UK-specific broadcaster services aren't tracked yet — ReelSeek doesn't claim complete coverage of every local UK service."
+    ],
+    relatedProviderSlugs: ["netflix", "prime-video", "disney-plus", "apple-tv"],
+    relatedGuideSlugs: [
+      "why-streaming-availability-changes-by-country",
+      "find-movies-by-genre-actor-year-rating"
+    ]
+  },
+  {
+    slug: "canada",
+    intro:
+      "ReelSeek supports Canada, covering the global streaming platforms. The Middle-East regional services ReelSeek also tracks do not operate in Canada, so they show as unavailable there.",
+    landscape: [
+      "In Canada, Netflix, Amazon Prime Video, Disney+, and Apple TV+ are the services that carry titles, with rent/buy options on Prime Video and Apple TV.",
+      "ReelSeek's regional providers (OSN+, Shahid, Watch It, TOD) are region-locked to MENA and are not available in Canada; their cards will read \"not available\" on Canadian titles.",
+      "Canadian catalogues frequently differ from the neighbouring US ones despite the shared language and region, which is exactly why per-country checking matters."
+    ],
+    tips: [
+      "Set the country selector to Canada for Canadian availability; ReelSeek can default to it automatically when you browse from Canada.",
+      "Compare against the four global platforms — the regional cards are expected to be empty here.",
+      "Don't assume US availability applies: Canadian licensing is negotiated separately."
+    ],
+    relatedProviderSlugs: ["netflix", "prime-video", "disney-plus", "apple-tv"],
+    relatedGuideSlugs: [
+      "why-streaming-availability-changes-by-country",
+      "find-a-movie-when-you-only-remember-part-of-the-title"
+    ]
   }
 ];
 

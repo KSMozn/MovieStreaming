@@ -9,7 +9,7 @@ import {
   providerContentBySlug
 } from "@/content/providers";
 import { publicFacts } from "@/content/publicFacts";
-import { site } from "@/lib/site";
+import { formatCountryList, site } from "@/lib/site";
 
 export function generateStaticParams() {
   return PROVIDER_CONTENT.map((p) => ({ slug: p.slug }));
@@ -24,8 +24,8 @@ export function generateMetadata({ params }: Props): Metadata {
   if (!content) return { robots: { index: false, follow: false } };
   const name = providerConfigFor(content).name;
   return pageMetadata({
-    title: `${name} — Streaming Availability in Egypt, Saudi Arabia and the UAE`,
-    description: `How ReelSeek checks ${name} in Egypt, Saudi Arabia and the UAE: what availability it shows, its limitations, and how to search ${name}'s catalogue.`,
+    title: `${name} — Streaming Availability by Country`,
+    description: `How ReelSeek checks ${name} across ${formatCountryList()}: what availability it shows, its limitations, and how to search ${name}'s catalogue.`,
     path: `/providers/${content.slug}`
   });
 }

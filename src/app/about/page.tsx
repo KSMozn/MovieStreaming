@@ -6,7 +6,7 @@ import { publicFacts } from "@/content/publicFacts";
 export const metadata = pageMetadata({
   title: "About ReelSeek",
   description:
-    "ReelSeek is a movie and TV streaming-discovery service for Egypt, Saudi Arabia and the UAE. Learn what it does, what it doesn’t do, and how it works.",
+    "ReelSeek is a movie and TV streaming-discovery service focused on the Middle East and also available in the US, UK and Canada. Learn what it does, what it doesn’t do, and how it works.",
   path: "/about"
 });
 

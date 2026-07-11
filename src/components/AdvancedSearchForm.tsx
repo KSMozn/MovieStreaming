@@ -8,6 +8,7 @@ import type { MediaType, ProviderKey } from "@/types";
 import type { CombinedGenreDto } from "@/app/api/genres/route";
 import type { PersonSearchResult } from "@/lib/tmdbClient";
 import { SORT_OPTIONS, type SortKey } from "@/lib/sort";
+import { site } from "@/lib/site";
 
 export interface SearchFormValues {
   q: string;
@@ -22,13 +23,7 @@ export interface SearchFormValues {
   sortBy: SortKey;
 }
 
-const COUNTRIES = [
-  { code: "EG", label: "Egypt" },
-  { code: "SA", label: "Saudi Arabia" },
-  { code: "AE", label: "UAE" },
-  { code: "US", label: "United States" },
-  { code: "GB", label: "United Kingdom" }
-];
+const COUNTRIES = site.countries.map((c) => ({ code: c.code, label: c.name }));
 
 interface Props {
   initial: SearchFormValues;

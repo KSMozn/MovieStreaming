@@ -6,7 +6,7 @@ import { COUNTRY_CONTENT, countryContentBySlug } from "@/content/countries";
 export const metadata = pageMetadata({
   title: "Supported Countries",
   description:
-    "ReelSeek computes streaming availability separately for Egypt, Saudi Arabia and the United Arab Emirates. See how each market differs and how to switch.",
+    "ReelSeek computes streaming availability separately for each supported market — Egypt, Saudi Arabia, the UAE, the US, the UK and Canada. See how each differs and how to switch.",
   path: "/supported-countries"
 });
 

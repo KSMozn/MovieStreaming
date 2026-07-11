@@ -55,11 +55,13 @@ export default function DataSourcesPage() {
             judge freshness.
           </p>
           <p>
-            Country-specific answers use each source’s regional data for
-            Egypt, Saudi Arabia, or the UAE. Where a provider is absent from
-            an upstream catalogue (currently Watch It in TMDb’s provider
-            data), search filtering for that provider is limited and ReelSeek
-            shows a warning rather than pretending the gap doesn’t exist.
+            Country-specific answers use each source’s regional data for the
+            selected market. Where a provider is absent from an upstream
+            catalogue (currently Watch It in TMDb’s provider data), search
+            filtering for that provider is limited and ReelSeek shows a
+            warning rather than pretending the gap doesn’t exist. Regional
+            Middle-East services (OSN+, Shahid, Watch It, TOD) do not operate
+            in the US, UK or Canada and correctly show as unavailable there.
           </p>
         </Prose>
       </Section>

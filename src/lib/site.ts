@@ -29,15 +29,22 @@ export const site = {
   defaultLocale: "en" as const,
   locales: ["en", "ar"] as const,
   defaultCountry: "EG" as const,
+  // `region: "mena"` marks ReelSeek's home markets (where the regional
+  // providers operate); "intl" markets are also supported but only the
+  // global providers carry titles there. Order is the display order.
   countries: [
-    { code: "EG", slug: "egypt", name: "Egypt", nameAr: "مصر" },
-    { code: "SA", slug: "saudi-arabia", name: "Saudi Arabia", nameAr: "السعودية" },
+    { code: "EG", slug: "egypt", name: "Egypt", nameAr: "مصر", region: "mena" },
+    { code: "SA", slug: "saudi-arabia", name: "Saudi Arabia", nameAr: "السعودية", region: "mena" },
     {
       code: "AE",
       slug: "united-arab-emirates",
       name: "United Arab Emirates",
-      nameAr: "الإمارات العربية المتحدة"
-    }
+      nameAr: "الإمارات العربية المتحدة",
+      region: "mena"
+    },
+    { code: "US", slug: "united-states", name: "United States", nameAr: "الولايات المتحدة", region: "intl" },
+    { code: "GB", slug: "united-kingdom", name: "United Kingdom", nameAr: "المملكة المتحدة", region: "intl" },
+    { code: "CA", slug: "canada", name: "Canada", nameAr: "كندا", region: "intl" }
   ],
   logo: {
     mark: "/brand/logo/reelseek-mark.svg",
@@ -65,6 +72,37 @@ export function countryBySlug(slug: string): CountryInfo | undefined {
 
 export function countryByCode(code: string): CountryInfo | undefined {
   return site.countries.find((c) => c.code === code.toUpperCase());
+}
+
+export function isSupportedCountry(code: string | null | undefined): boolean {
+  return !!code && site.countries.some((c) => c.code === code.toUpperCase());
+}
+
+export const menaCountries = site.countries.filter((c) => c.region === "mena");
+
+// "Egypt, Saudi Arabia, the United Arab Emirates, the United States, the
+// United Kingdom, and Canada" — keeps prose accurate as the list grows.
+// Codes with a definite article read naturally ("the UK").
+const THE_PREFIXED = new Set(["AE", "US", "GB"]);
+
+// "the United States" / "the UAE" / "Egypt" — natural article for prose.
+export function withArticle(country: CountryInfo): string {
+  return THE_PREFIXED.has(country.code) ? `the ${country.name}` : country.name;
+}
+
+export function formatCountryList(
+  which: "all" | "mena" = "all",
+  useAr = false
+): string {
+  const list = which === "mena" ? menaCountries : site.countries;
+  const names = list.map((c) => {
+    const name = useAr ? c.nameAr : c.name;
+    return !useAr && THE_PREFIXED.has(c.code) ? `the ${name}` : name;
+  });
+  if (names.length <= 1) return names.join("");
+  const sep = useAr ? "، " : ", ";
+  const and = useAr ? " و" : ", and ";
+  return names.slice(0, -1).join(sep) + and + names[names.length - 1];
 }
 
 // Indexing is ON unless explicitly disabled (preview/staging deployments set

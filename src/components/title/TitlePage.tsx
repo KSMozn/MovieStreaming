@@ -3,6 +3,7 @@
 // initial HTML; only the availability switcher and recents recording hydrate.
 
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import {
   GenreChip,
@@ -19,7 +20,8 @@ import { getTitleDetails } from "@/server/titles";
 import { getTitleAvailability } from "@/server/availability";
 import { movieSchema, tvSeriesSchema } from "@/lib/seo/schema";
 import { pageMetadata, truncateDescription } from "@/lib/seo/metadata";
-import { countryByCode, site } from "@/lib/site";
+import { countryByCode, formatCountryList, site } from "@/lib/site";
+import { GEO_HEADER, resolveCountry } from "@/lib/geo";
 import type { MediaType, MovieDetailsDto } from "@/types";
 
 export function parseTmdbId(raw: string): number | null {
@@ -43,15 +45,15 @@ export async function buildTitleMetadata(
     return { robots: { index: false, follow: false } };
   }
   const year = releaseYear(details);
-  const defaultCountry = countryByCode(site.defaultCountry)!;
   const path = `/${mediaType === "tv" ? "tv" : "movie"}/${details.tmdbId}`;
+  const kind = mediaType === "tv" ? "TV show" : "movie";
   return pageMetadata({
-    title: `Where to Watch ${details.title}${year ? ` (${year})` : ""} in ${defaultCountry.name}`,
+    // Country-agnostic canonical title (the page serves every supported
+    // market); the description names the countries.
+    title: `Where to Watch ${details.title}${year ? ` (${year})` : ""}`,
     description: truncateDescription(
       details.overview ||
-        `See which streaming services carry ${details.title} in ${site.countries
-          .map((c) => c.name)
-          .join(", ")} — with ratings, cast, and links to the provider.`
+        `Find where to stream the ${kind} ${details.title} across ${formatCountryList()} — with ratings, cast, and links to the provider.`
     ),
     path,
     ogType: mediaType === "tv" ? "video.tv_show" : "video.movie",
@@ -75,8 +77,9 @@ export async function TitlePageBody({
   const details = await getTitleDetails(id, mediaType);
   if (!details) notFound();
 
-  const requested = (searchParams.country ?? site.defaultCountry).toUpperCase();
-  const country = countryByCode(requested)?.code ?? site.defaultCountry;
+  // Country priority: explicit ?country= → detected country → default EG.
+  const geoCountry = headers().get(GEO_HEADER);
+  const country = resolveCountry(searchParams.country, geoCountry);
   const availability = await getTitleAvailability(id, mediaType, country);
 
   const hub = mediaType === "tv" ? "/tv-shows" : "/movies";

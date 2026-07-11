@@ -7,7 +7,7 @@ import { publicFacts } from "@/content/publicFacts";
 export const metadata = pageMetadata({
   title: "Streaming Providers ReelSeek Checks",
   description:
-    "The streaming services ReelSeek checks for availability in Egypt, Saudi Arabia and the UAE — Netflix, Shahid, OSN+, TOD, Watch It, Prime Video, Disney+ and Apple TV+.",
+    "The streaming services ReelSeek checks for availability by country — Netflix, Shahid, OSN+, TOD, Watch It, Prime Video, Disney+ and Apple TV+.",
   path: "/providers"
 });
 

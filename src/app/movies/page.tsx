@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const metadata = pageMetadata({
   title: "Movies — Popular and Top Rated",
   description:
-    "Browse popular and top-rated movies and see where each one is streaming in Egypt, Saudi Arabia or the UAE.",
+    "Browse popular and top-rated movies and see where each one is streaming in your country.",
   path: "/movies"
 });
 
