@@ -1,0 +1,9 @@
+app_identifier("com.khaledsamir.reelseek")
+
+# Signing / App Store Connect identity is read from the environment so no
+# secrets live in the repo. See fastlane/.env.example. The API-key lanes
+# don't need apple_id, but it's wired for the rare action that falls back to
+# username auth.
+apple_id(ENV["APPLE_ID"]) if ENV["APPLE_ID"]
+team_id(ENV["APPLE_TEAM_ID"]) if ENV["APPLE_TEAM_ID"]
+itc_team_id(ENV["APP_STORE_CONNECT_TEAM_ID"]) if ENV["APP_STORE_CONNECT_TEAM_ID"]

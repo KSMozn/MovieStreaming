@@ -1,0 +1,77 @@
+# ReelSeek Android — Google Play lanes.
+#
+# Setup (values come from fastlane/.env — copy .env.example):
+#   * Play service-account JSON: PLAY_JSON_KEY_PATH
+#   * Upload keystore: already wired into app/build.gradle.kts via
+#     android/keystore.properties — not managed here.
+#
+# gradle needs a JDK 17. This machine has the Homebrew openjdk@17; the lane
+# auto-detects it (or Android Studio's bundled JBR) unless ANDROID_JAVA_HOME is
+# set. versionCode is overridden with the git commit count so repeated uploads
+# don't collide (Play rejects a duplicate versionCode).
+
+AAB_PATH = "app/build/outputs/bundle/release/app-release.aab"
+
+default_platform(:android)
+
+platform :android do
+  before_all do
+    ensure_java_home
+  end
+
+  private_lane :ensure_java_home do
+    current = ENV["JAVA_HOME"]
+    unless current && File.exist?(File.join(current, "bin", "java"))
+      candidates = [
+        ENV["ANDROID_JAVA_HOME"],
+        "/Users/khaledsamir/homebrew/opt/openjdk@17",
+        "/opt/homebrew/opt/openjdk@17",
+        "/usr/local/opt/openjdk@17",
+        File.expand_path("~/Applications/Android Studio.app/Contents/jbr/Contents/Home"),
+        "/Applications/Android Studio.app/Contents/jbr/Contents/Home",
+      ].compact
+      jdk = candidates.find { |p| File.exist?(File.join(p, "bin", "java")) }
+      UI.user_error!("No JDK 17 found. Set ANDROID_JAVA_HOME to a JDK home.") unless jdk
+      ENV["JAVA_HOME"] = jdk
+      UI.message("Using JAVA_HOME=#{jdk}")
+    end
+  end
+
+  desc "Build a signed release AAB"
+  lane :build do
+    gradle(task: "clean")
+    gradle(
+      task: "bundle",
+      build_type: "Release",
+      properties: { "versionCode" => number_of_commits },
+    )
+  end
+
+  desc "Build and upload to the Play internal testing track"
+  lane :beta do
+    build
+    upload_to_play_store(
+      track: "internal",
+      aab: AAB_PATH,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true,
+    )
+  end
+
+  desc "Build and create a draft production release on Play"
+  lane :release do
+    build
+    upload_to_play_store(
+      track: "production",
+      aab: AAB_PATH,
+      # Draft so a human rolls out from the Play Console after a final check.
+      release_status: "draft",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true,
+    )
+  end
+end

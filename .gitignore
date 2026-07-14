@@ -8,3 +8,22 @@ coverage
 *.log
 tsconfig.tsbuildinfo
 .claude/
+
+# Signing / release secrets — never commit
+*.p8
+*.p12
+*.mobileprovision
+
+# Ruby / Bundler (fastlane toolchain)
+.bundle/
+vendor/bundle/
+
+# Fastlane (.env is already covered above)
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/README.md
+**/fastlane/test_output/
+# Google Play service-account key — must never be committed
+**/fastlane/play-service-account*.json
+# App Store Connect API keys dropped into the fastlane dir
+**/fastlane/AuthKey*.p8

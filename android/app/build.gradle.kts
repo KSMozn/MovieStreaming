@@ -11,6 +11,11 @@ import java.util.Properties
 val apiBaseUrl: String = (project.findProperty("apiBaseUrl") as? String)
     ?: "https://reelseek.co"
 
+// versionCode can be overridden from the command line (fastlane passes the git
+// commit count via -PversionCode so repeated Play uploads never collide).
+val versionCodeOverride: Int? =
+    (project.findProperty("versionCode") as? String)?.toIntOrNull()
+
 // Release signing from android/keystore.properties (gitignored):
 //   storeFile=upload-keystore.jks
 //   storePassword=…
@@ -29,7 +34,7 @@ android {
         applicationId = "com.khaledsamir.reelseek"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
+        versionCode = versionCodeOverride ?: 1
         versionName = "1.0.0"
 
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")

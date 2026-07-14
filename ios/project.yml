@@ -7,6 +7,8 @@ options:
   groupSortPosition: top
 settings:
   base:
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
     SWIFT_VERSION: "5.9"
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     ENABLE_USER_SCRIPT_SANDBOXING: NO
@@ -24,8 +26,14 @@ targets:
       path: Reelseek/Info.plist
       properties:
         CFBundleDisplayName: ReelSeek
-        CFBundleShortVersionString: "1.0"
-        CFBundleVersion: "1"
+        # Version driven by build settings so fastlane can stamp a fresh build
+        # number (CURRENT_PROJECT_VERSION) per upload without editing this file.
+        # XcodeGen regenerates Info.plist from these properties on every build.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # App uses only standard HTTPS/TLS — exempt from export compliance.
+        # Declaring it stops App Store Connect from asking on every upload.
+        ITSAppUsesNonExemptEncryption: false
         UILaunchScreen:
           UIColorName: "LaunchBackground"
         UIUserInterfaceStyle: Dark
@@ -52,3 +60,16 @@ targets:
           API_BASE_URL: "https://reelseek.co"
         Release:
           API_BASE_URL: "https://reelseek.co"
+
+# A *shared* scheme is required for headless `xcodebuild archive` / fastlane
+# gym. XcodeGen only writes one into xcshareddata when it is declared here;
+# otherwise Xcode creates a per-user scheme that CI can't see.
+schemes:
+  Reelseek:
+    build:
+      targets:
+        Reelseek: all
+    run:
+      config: Debug
+    archive:
+      config: Release

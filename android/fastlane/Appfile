@@ -1,0 +1,5 @@
+package_name("com.khaledsamir.reelseek")
+
+# Path to the Google Play service-account JSON, read from the environment so
+# the key never lands in the repo. See fastlane/.env.example.
+json_key_file(ENV["PLAY_JSON_KEY_PATH"]) if ENV["PLAY_JSON_KEY_PATH"]
