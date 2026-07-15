@@ -1,9 +1,9 @@
 // Typed JSON-LD builders. Structured data must mirror visible page content —
 // never invent ratings, reviews, counts, prices, awards, or partnerships.
 
-import { absoluteUrl, site } from "@/lib/site";
+import { absoluteUrl, site, type CountryInfo } from "@/lib/site";
 import { publicFacts } from "@/content/publicFacts";
-import type { MovieDetailsDto, PersonDto } from "@/types";
+import type { AvailabilityDto, MovieDetailsDto, PersonDto } from "@/types";
 
 type JsonLdObject = Record<string, unknown>;
 
@@ -77,8 +77,46 @@ function actorList(details: MovieDetailsDto) {
   }));
 }
 
-export function movieSchema(details: MovieDetailsDto): JsonLdObject {
-  const url = absoluteUrl(`/movie/${details.tmdbId}`);
+// Options for scoping a title's schema to a specific market (per-country
+// pages). When availability is passed, each currently-streamable provider
+// becomes a WatchAction whose Offer is limited to that country via
+// eligibleRegion — mirroring the provider cards shown on the page.
+export interface TitleSchemaOpts {
+  canonicalPath?: string;
+  availability?: AvailabilityDto | null;
+  country?: CountryInfo;
+}
+
+function watchActions(
+  availability: AvailabilityDto,
+  country: CountryInfo
+): JsonLdObject[] {
+  return availability.providers
+    .filter((p) => p.available && p.streamingUrl)
+    .map((p) => ({
+      "@type": "WatchAction",
+      name: p.providerName,
+      target: p.streamingUrl,
+      expectsAcceptanceOf: {
+        "@type": "Offer",
+        ...(p.availabilityType ? { category: p.availabilityType } : {}),
+        ...(isValidIsoDate(p.startsAt)
+          ? { availabilityStarts: p.startsAt }
+          : {}),
+        eligibleRegion: { "@type": "Country", name: country.name }
+      }
+    }));
+}
+
+export function movieSchema(
+  details: MovieDetailsDto,
+  opts: TitleSchemaOpts = {}
+): JsonLdObject {
+  const url = absoluteUrl(opts.canonicalPath ?? `/movie/${details.tmdbId}`);
+  const actions =
+    opts.availability && opts.country
+      ? watchActions(opts.availability, opts.country)
+      : [];
   return {
     "@context": "https://schema.org",
     "@type": "Movie",
@@ -92,15 +130,23 @@ export function movieSchema(details: MovieDetailsDto): JsonLdObject {
       ? { duration: `PT${details.runtime}M` }
       : {}),
     ...(details.genres.length > 0 ? { genre: details.genres } : {}),
-    ...(details.cast.length > 0 ? { actor: actorList(details) } : {})
+    ...(details.cast.length > 0 ? { actor: actorList(details) } : {}),
+    ...(actions.length > 0 ? { potentialAction: actions } : {})
     // Aggregate ratings are only emitted when displayed with clear source
     // attribution on the page; TMDb/IMDb scores render as attributed text,
     // so we deliberately omit aggregateRating here.
   };
 }
 
-export function tvSeriesSchema(details: MovieDetailsDto): JsonLdObject {
-  const url = absoluteUrl(`/tv/${details.tmdbId}`);
+export function tvSeriesSchema(
+  details: MovieDetailsDto,
+  opts: TitleSchemaOpts = {}
+): JsonLdObject {
+  const url = absoluteUrl(opts.canonicalPath ?? `/tv/${details.tmdbId}`);
+  const actions =
+    opts.availability && opts.country
+      ? watchActions(opts.availability, opts.country)
+      : [];
   return {
     "@context": "https://schema.org",
     "@type": "TVSeries",
@@ -117,7 +163,8 @@ export function tvSeriesSchema(details: MovieDetailsDto): JsonLdObject {
       ? { numberOfEpisodes: details.numberOfEpisodes }
       : {}),
     ...(details.genres.length > 0 ? { genre: details.genres } : {}),
-    ...(details.cast.length > 0 ? { actor: actorList(details) } : {})
+    ...(details.cast.length > 0 ? { actor: actorList(details) } : {}),
+    ...(actions.length > 0 ? { potentialAction: actions } : {})
   };
 }
 

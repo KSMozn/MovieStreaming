@@ -20,8 +20,17 @@ import { getTitleDetails } from "@/server/titles";
 import { getTitleAvailability } from "@/server/availability";
 import { movieSchema, tvSeriesSchema } from "@/lib/seo/schema";
 import { pageMetadata, truncateDescription } from "@/lib/seo/metadata";
-import { countryByCode, formatCountryList, site } from "@/lib/site";
+import { absoluteUrl, site, type CountryInfo } from "@/lib/site";
+import Link from "next/link";
 import { GEO_HEADER, resolveCountry } from "@/lib/geo";
+import {
+  countryIntro,
+  titleMetaDescription,
+  titleMetaTitle,
+  titlePath,
+  titleStrings,
+  type Locale
+} from "@/lib/title-i18n";
 import type { MediaType, MovieDetailsDto } from "@/types";
 
 export function parseTmdbId(raw: string): number | null {
@@ -36,7 +45,8 @@ function releaseYear(details: MovieDetailsDto): string | null {
 
 export async function buildTitleMetadata(
   rawId: string,
-  mediaType: MediaType
+  mediaType: MediaType,
+  opts: { country?: CountryInfo; locale?: Locale } = {}
 ): Promise<Metadata> {
   const id = parseTmdbId(rawId);
   const details = id ? await getTitleDetails(id, mediaType) : null;
@@ -44,18 +54,29 @@ export async function buildTitleMetadata(
     // Invalid or unknown IDs must not produce an indexable generic shell.
     return { robots: { index: false, follow: false } };
   }
+  const { country } = opts;
+  const locale: Locale = opts.locale ?? "en";
   const year = releaseYear(details);
-  const path = `/${mediaType === "tv" ? "tv" : "movie"}/${details.tmdbId}`;
-  const kind = mediaType === "tv" ? "TV show" : "movie";
+  const path = titlePath(mediaType, details.tmdbId, { country, locale });
+
+  // hreflang: this exact page (base or a specific country) has an English and
+  // an Arabic equivalent; x-default points at the English one.
+  const languages = {
+    en: absoluteUrl(titlePath(mediaType, details.tmdbId, { country })),
+    ar: absoluteUrl(
+      titlePath(mediaType, details.tmdbId, { country, locale: "ar" })
+    ),
+    "x-default": absoluteUrl(titlePath(mediaType, details.tmdbId, { country }))
+  };
+
   return pageMetadata({
-    // Country-agnostic canonical title (the page serves every supported
-    // market); the description names the countries.
-    title: `Where to Watch ${details.title}${year ? ` (${year})` : ""}`,
+    title: titleMetaTitle({ title: details.title, year, country, locale }),
     description: truncateDescription(
-      details.overview ||
-        `Find where to stream the ${kind} ${details.title} across ${formatCountryList()} — with ratings, cast, and links to the provider.`
+      titleMetaDescription({ title: details.title, mediaType, country, locale })
     ),
     path,
+    locale,
+    languages,
     ogType: mediaType === "tv" ? "video.tv_show" : "video.movie",
     images: details.posterUrl
       ? [{ url: details.posterUrl, alt: `${details.title} poster` }]
@@ -66,29 +87,82 @@ export async function buildTitleMetadata(
 export async function TitlePageBody({
   rawId,
   mediaType,
-  searchParams
+  searchParams,
+  country: forcedCountry,
+  locale = "en"
 }: {
   rawId: string;
   mediaType: MediaType;
-  searchParams: { country?: string };
+  searchParams?: { country?: string };
+  /** Forced market for a per-country route (/movie/[id]/[country]). */
+  country?: CountryInfo;
+  locale?: Locale;
 }) {
   const id = parseTmdbId(rawId);
   if (!id) notFound();
   const details = await getTitleDetails(id, mediaType);
   if (!details) notFound();
 
-  // Country priority: explicit ?country= → detected country → default EG.
-  const geoCountry = headers().get(GEO_HEADER);
-  const country = resolveCountry(searchParams.country, geoCountry);
-  const availability = await getTitleAvailability(id, mediaType, country);
+  const t = titleStrings(locale);
+
+  // On a per-country route the market is fixed; otherwise resolve it from an
+  // explicit ?country= → detected country → default EG.
+  const countryCode = forcedCountry
+    ? forcedCountry.code
+    : resolveCountry(searchParams?.country, headers().get(GEO_HEADER));
+  const availability = await getTitleAvailability(id, mediaType, countryCode);
+
+  // On a per-country route, scope the JSON-LD to that market (WatchActions +
+  // eligibleRegion) and to the country-specific canonical URL.
+  const schemaOpts = forcedCountry
+    ? {
+        canonicalPath: titlePath(mediaType, details.tmdbId, {
+          country: forcedCountry,
+          locale
+        }),
+        availability,
+        country: forcedCountry
+      }
+    : undefined;
 
   const hub = mediaType === "tv" ? "/tv-shows" : "/movies";
-  const hubName = mediaType === "tv" ? "TV shows" : "Movies";
-  const path = `/${mediaType === "tv" ? "tv" : "movie"}/${details.tmdbId}`;
+  const hubName = mediaType === "tv" ? t.tvShows : t.movies;
+
+  const crumbs: { name: string; path: string }[] = [
+    { name: t.home, path: locale === "ar" ? "/ar" : "/" }
+  ];
+  // Hub landing pages only exist in English; skip the hub crumb in Arabic
+  // rather than link to a non-existent /ar/movies.
+  if (locale === "en") crumbs.push({ name: hubName, path: hub });
+  crumbs.push({
+    name: details.title,
+    path: titlePath(mediaType, details.tmdbId, { locale })
+  });
+  if (forcedCountry) {
+    crumbs.push({
+      name: locale === "ar" ? forcedCountry.nameAr : forcedCountry.name,
+      path: titlePath(mediaType, details.tmdbId, {
+        country: forcedCountry,
+        locale
+      })
+    });
+  }
+
+  const availabilityHeading = forcedCountry
+    ? `${t.whereToWatch} ${details.title} ${locale === "ar" ? "في" : "in"} ${
+        locale === "ar" ? forcedCountry.nameAr : forcedCountry.name
+      }`
+    : t.whereToWatch;
 
   return (
     <div className="space-y-10">
-      <JsonLd data={mediaType === "tv" ? tvSeriesSchema(details) : movieSchema(details)} />
+      <JsonLd
+        data={
+          mediaType === "tv"
+            ? tvSeriesSchema(details, schemaOpts)
+            : movieSchema(details, schemaOpts)
+        }
+      />
       <RecentsRecorder
         entry={{
           tmdbId: details.tmdbId,
@@ -98,13 +172,7 @@ export async function TitlePageBody({
         }}
       />
 
-      <Breadcrumbs
-        items={[
-          { name: "Home", path: "/" },
-          { name: hubName, path: hub },
-          { name: details.title, path }
-        ]}
-      />
+      <Breadcrumbs items={crumbs} />
 
       <section className="grid md:grid-cols-[260px_1fr] gap-6">
         {/* Cap the poster width when the grid collapses to one column on
@@ -132,7 +200,7 @@ export async function TitlePageBody({
                   : "bg-sky-500/20 text-sky-300"
               }`}
             >
-              {details.mediaType === "tv" ? "TV SERIES" : "MOVIE"}
+              {details.mediaType === "tv" ? t.tvSeries : t.movie}
             </span>
           </div>
           <div>
@@ -146,48 +214,118 @@ export async function TitlePageBody({
             <TmdbRatingBadge rating={details.tmdbRating} votes={details.tmdbVotes} />
             <ImdbLinkButton imdbId={details.imdbId} />
             <span className="text-sm text-white/70">
-              {details.releaseDate ?? "Release date unknown"}
+              {details.releaseDate ?? t.releaseUnknown}
             </span>
             {details.runtime != null && (
               <span className="text-sm text-white/70">
-                · {details.runtime} min{details.mediaType === "tv" ? " / ep" : ""}
+                · {details.runtime}{" "}
+                {details.mediaType === "tv" ? t.minPerEp : t.min}
               </span>
             )}
             {details.mediaType === "tv" && details.numberOfSeasons != null && (
               <span className="text-sm text-white/70">
-                · {details.numberOfSeasons} season
-                {details.numberOfSeasons === 1 ? "" : "s"}
+                · {t.seasonWord(details.numberOfSeasons)}
                 {details.numberOfEpisodes != null
-                  ? ` · ${details.numberOfEpisodes} episodes`
+                  ? ` · ${details.numberOfEpisodes} ${t.episodesWord}`
                   : ""}
               </span>
             )}
           </div>
           <div className="flex flex-wrap gap-2">
             {details.genres.length === 0 ? (
-              <span className="text-sm text-white/50">No genres</span>
+              <span className="text-sm text-white/50">{t.noGenres}</span>
             ) : (
               details.genres.map((g) => <GenreChip key={g}>{g}</GenreChip>)
             )}
           </div>
           <p className="text-sm leading-relaxed text-white/80">
-            {details.overview || "No description available."}
+            {details.overview || t.noDescription}
           </p>
           <div>
             <h2 className="text-sm uppercase tracking-wider text-white/50 mb-2">
-              Top cast
+              {t.topCast}
             </h2>
             <CastList cast={details.cast} />
           </div>
         </div>
       </section>
 
+      {forcedCountry && (
+        <p className="text-sm leading-relaxed text-white/70 -mt-4">
+          {countryIntro({
+            title: details.title,
+            country: forcedCountry,
+            mediaType,
+            locale
+          })}
+        </p>
+      )}
+
       <AvailabilityClient
         tmdbId={details.tmdbId}
         mediaType={details.mediaType}
-        initialCountry={country}
-        initialAvailability={availability}
+        country={countryCode}
+        availability={availability}
+        locale={locale}
+        heading={availabilityHeading}
+      />
+
+      <CountryLinks
+        mediaType={mediaType}
+        tmdbId={details.tmdbId}
+        title={details.title}
+        currentCode={forcedCountry ? forcedCountry.code : null}
+        locale={locale}
       />
     </div>
+  );
+}
+
+// Internal-linking block: crawlable links to every {title}×{country} page.
+// Gives search engines a discovery path to the per-country variants and lets
+// visitors jump straight to their market.
+function CountryLinks({
+  mediaType,
+  tmdbId,
+  title,
+  currentCode,
+  locale
+}: {
+  mediaType: MediaType;
+  tmdbId: number;
+  title: string;
+  currentCode: string | null;
+  locale: Locale;
+}) {
+  const t = titleStrings(locale);
+  return (
+    <section aria-labelledby="by-country-heading" className="border-t border-border pt-6">
+      <h2
+        id="by-country-heading"
+        className="text-sm uppercase tracking-wider text-white/50 mb-3"
+      >
+        {t.byCountryHeading(title)}
+      </h2>
+      <ul className="flex flex-wrap gap-2">
+        {site.countries.map((c) => {
+          const active = c.code === currentCode;
+          return (
+            <li key={c.code}>
+              <Link
+                href={titlePath(mediaType, tmdbId, { country: c, locale })}
+                aria-current={active ? "page" : undefined}
+                className={`inline-block text-sm rounded-lg border px-3 py-1.5 transition ${
+                  active
+                    ? "border-accent text-accent bg-accent/10"
+                    : "border-border text-white/80 hover:border-white/40"
+                }`}
+              >
+                {locale === "ar" ? c.nameAr : c.name}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }

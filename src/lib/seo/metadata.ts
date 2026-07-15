@@ -46,6 +46,12 @@ export interface PageMetadataInput {
   ogType?: "website" | "article" | "video.movie" | "video.tv_show" | "profile";
   images?: { url: string; width?: number; height?: number; alt?: string }[];
   locale?: "en" | "ar";
+  /**
+   * Explicit hreflang alternates for dynamic routes (title/country pages) that
+   * aren't in the static LOCALIZED_PATHS map. When omitted, alternates are
+   * derived from LOCALIZED_PATHS via the canonical path. Pass absolute URLs.
+   */
+  languages?: Record<string, string>;
 }
 
 // Central metadata builder: every indexable page gets a self-referencing
@@ -59,7 +65,7 @@ export function pageMetadata(input: PageMetadataInput): Metadata {
     description: input.description,
     alternates: {
       canonical,
-      languages: languageAlternates(input.path)
+      languages: input.languages ?? languageAlternates(input.path)
     },
     robots: noindex ? { index: false, follow: true } : { index: true, follow: true },
     openGraph: {
