@@ -1,4 +1,5 @@
 import { fetchJson } from "./http";
+import type { CountryReleaseDates } from "@/lib/theatrical";
 import type {
   CastMemberDto,
   MediaType,
@@ -163,6 +164,22 @@ export async function tmdbGetTitle(
     key()
   )}&append_to_response=credits,external_ids`;
   return fetchJson<TmdbTitle>(url, { revalidate: 60 * 60 });
+}
+
+// Per-country theatrical/digital release dates (movies only). Powers the
+// "in theaters now" notice. Shape mirrors src/lib/theatrical.ts.
+interface TmdbReleaseDatesResponse {
+  id: number;
+  results: CountryReleaseDates[];
+}
+
+export async function tmdbGetReleaseDates(
+  tmdbId: number
+): Promise<TmdbReleaseDatesResponse> {
+  const url = `${TMDB_BASE}/movie/${tmdbId}/release_dates?api_key=${encodeURIComponent(
+    key()
+  )}`;
+  return fetchJson<TmdbReleaseDatesResponse>(url, { revalidate: 60 * 60 });
 }
 
 export function normalizeTmdbTitle(

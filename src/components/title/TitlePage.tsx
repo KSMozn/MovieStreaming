@@ -15,12 +15,14 @@ import { CastList } from "@/components/CastList";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Breadcrumbs } from "@/components/marketing/Page";
 import { AvailabilityClient } from "@/components/title/AvailabilityClient";
+import { TheatricalNotice } from "@/components/title/TheatricalNotice";
 import { RecentsRecorder } from "@/components/title/RecentsRecorder";
 import { getTitleDetails } from "@/server/titles";
 import { getTitleAvailability } from "@/server/availability";
+import { getTheatricalStatus } from "@/server/theatrical";
 import { movieSchema, tvSeriesSchema } from "@/lib/seo/schema";
 import { pageMetadata, truncateDescription } from "@/lib/seo/metadata";
-import { absoluteUrl, site, type CountryInfo } from "@/lib/site";
+import { absoluteUrl, countryByCode, site, type CountryInfo } from "@/lib/site";
 import Link from "next/link";
 import { GEO_HEADER, resolveCountry } from "@/lib/geo";
 import {
@@ -110,7 +112,11 @@ export async function TitlePageBody({
   const countryCode = forcedCountry
     ? forcedCountry.code
     : resolveCountry(searchParams?.country, headers().get(GEO_HEADER));
-  const availability = await getTitleAvailability(id, mediaType, countryCode);
+  const activeCountry = forcedCountry ?? countryByCode(countryCode)!;
+  const [availability, theatrical] = await Promise.all([
+    getTitleAvailability(id, mediaType, countryCode),
+    getTheatricalStatus(id, mediaType, countryCode)
+  ]);
 
   // On a per-country route, scope the JSON-LD to that market (WatchActions +
   // eligibleRegion) and to the country-specific canonical URL.
@@ -260,6 +266,13 @@ export async function TitlePageBody({
           })}
         </p>
       )}
+
+      <TheatricalNotice
+        status={theatrical}
+        country={activeCountry}
+        title={details.title}
+        locale={locale}
+      />
 
       <AvailabilityClient
         tmdbId={details.tmdbId}

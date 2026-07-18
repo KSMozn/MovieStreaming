@@ -120,7 +120,15 @@ export function titleStrings(locale: Locale) {
       min: "دقيقة",
       seasonWord: (n: number) => `${n} موسم`,
       episodesWord: "حلقة",
-      dateLocale: "ar-EG"
+      dateLocale: "ar-EG",
+      theaters: {
+        now: (c: string) => `في دور العرض الآن في ${c}`,
+        upcoming: (c: string) => `قريبًا في دور العرض في ${c}`,
+        released: "تاريخ العرض",
+        opens: "يبدأ العرض",
+        rated: "التصنيف",
+        findShowtimes: "ابحث عن مواعيد العروض والتذاكر"
+      }
     } as const;
   }
   return {
@@ -145,6 +153,14 @@ export function titleStrings(locale: Locale) {
     min: "min",
     seasonWord: (n: number) => `${n} season${n === 1 ? "" : "s"}`,
     episodesWord: "episodes",
-    dateLocale: "en-GB"
+    dateLocale: "en-GB",
+    theaters: {
+      now: (c: string) => `In theaters now in ${c}`,
+      upcoming: (c: string) => `Coming to cinemas in ${c}`,
+      released: "Released",
+      opens: "Opens",
+      rated: "Rated",
+      findShowtimes: "Find showtimes & tickets"
+    }
   } as const;
 }
