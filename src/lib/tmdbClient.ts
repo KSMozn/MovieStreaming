@@ -154,6 +154,20 @@ export interface TmdbTitle {
   vote_count?: number | null;
   genres: TmdbGenre[];
   credits?: TmdbCredits;
+  videos?: { results?: TmdbVideo[] };
+}
+
+// A trailer/teaser entry from TMDb's /videos data (studio-curated, hosted on
+// YouTube/Vimeo). See src/lib/trailer.ts for selection.
+export interface TmdbVideo {
+  key: string;
+  site: string;
+  type: string;
+  official: boolean;
+  name: string;
+  size?: number;
+  iso_639_1?: string;
+  published_at?: string;
 }
 
 export async function tmdbGetTitle(
@@ -162,7 +176,7 @@ export async function tmdbGetTitle(
 ): Promise<TmdbTitle> {
   const url = `${TMDB_BASE}/${mediaType}/${tmdbId}?api_key=${encodeURIComponent(
     key()
-  )}&append_to_response=credits,external_ids`;
+  )}&append_to_response=credits,external_ids,videos`;
   return fetchJson<TmdbTitle>(url, { revalidate: 60 * 60 });
 }
 

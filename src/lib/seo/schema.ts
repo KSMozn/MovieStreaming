@@ -3,6 +3,7 @@
 
 import { absoluteUrl, site, type CountryInfo } from "@/lib/site";
 import { publicFacts } from "@/content/publicFacts";
+import { youtubeEmbedUrl, youtubeThumb, type Trailer } from "@/lib/trailer";
 import type { AvailabilityDto, MovieDetailsDto, PersonDto } from "@/types";
 
 type JsonLdObject = Record<string, unknown>;
@@ -85,6 +86,25 @@ export interface TitleSchemaOpts {
   canonicalPath?: string;
   availability?: AvailabilityDto | null;
   country?: CountryInfo;
+  trailer?: Trailer | null;
+}
+
+// VideoObject for the official trailer. Only TMDb-sourced YouTube keys reach
+// here, embedded via the no-cookie player.
+function trailerVideoObject(
+  trailer: Trailer,
+  title: MovieDetailsDto
+): JsonLdObject {
+  return {
+    "@type": "VideoObject",
+    name: trailer.name || `${title.title} — Official Trailer`,
+    description: `Official trailer for ${title.title}.`,
+    thumbnailUrl: youtubeThumb(trailer.key),
+    embedUrl: youtubeEmbedUrl(trailer.key),
+    ...(isValidIsoDate((trailer.publishedAt ?? "").slice(0, 10))
+      ? { uploadDate: trailer.publishedAt!.slice(0, 10) }
+      : {})
+  };
 }
 
 function watchActions(
@@ -131,7 +151,8 @@ export function movieSchema(
       : {}),
     ...(details.genres.length > 0 ? { genre: details.genres } : {}),
     ...(details.cast.length > 0 ? { actor: actorList(details) } : {}),
-    ...(actions.length > 0 ? { potentialAction: actions } : {})
+    ...(actions.length > 0 ? { potentialAction: actions } : {}),
+    ...(opts.trailer ? { trailer: trailerVideoObject(opts.trailer, details) } : {})
     // Aggregate ratings are only emitted when displayed with clear source
     // attribution on the page; TMDb/IMDb scores render as attributed text,
     // so we deliberately omit aggregateRating here.
@@ -164,7 +185,8 @@ export function tvSeriesSchema(
       : {}),
     ...(details.genres.length > 0 ? { genre: details.genres } : {}),
     ...(details.cast.length > 0 ? { actor: actorList(details) } : {}),
-    ...(actions.length > 0 ? { potentialAction: actions } : {})
+    ...(actions.length > 0 ? { potentialAction: actions } : {}),
+    ...(opts.trailer ? { trailer: trailerVideoObject(opts.trailer, details) } : {})
   };
 }
 

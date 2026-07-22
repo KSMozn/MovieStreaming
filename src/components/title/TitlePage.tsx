@@ -16,10 +16,12 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { Breadcrumbs } from "@/components/marketing/Page";
 import { AvailabilityClient } from "@/components/title/AvailabilityClient";
 import { TheatricalNotice } from "@/components/title/TheatricalNotice";
+import { PosterGallery } from "@/components/title/PosterGallery";
 import { RecentsRecorder } from "@/components/title/RecentsRecorder";
 import { getTitleDetails } from "@/server/titles";
 import { getTitleAvailability } from "@/server/availability";
 import { getTheatricalStatus } from "@/server/theatrical";
+import { getTitleTrailer } from "@/server/trailer";
 import { movieSchema, tvSeriesSchema } from "@/lib/seo/schema";
 import { pageMetadata, truncateDescription } from "@/lib/seo/metadata";
 import { absoluteUrl, countryByCode, site, type CountryInfo } from "@/lib/site";
@@ -113,23 +115,28 @@ export async function TitlePageBody({
     ? forcedCountry.code
     : resolveCountry(searchParams?.country, headers().get(GEO_HEADER));
   const activeCountry = forcedCountry ?? countryByCode(countryCode)!;
-  const [availability, theatrical] = await Promise.all([
+  const [availability, theatrical, trailer] = await Promise.all([
     getTitleAvailability(id, mediaType, countryCode),
-    getTheatricalStatus(id, mediaType, countryCode)
+    getTheatricalStatus(id, mediaType, countryCode),
+    getTitleTrailer(id, mediaType, locale)
   ]);
 
-  // On a per-country route, scope the JSON-LD to that market (WatchActions +
-  // eligibleRegion) and to the country-specific canonical URL.
-  const schemaOpts = forcedCountry
-    ? {
-        canonicalPath: titlePath(mediaType, details.tmdbId, {
-          country: forcedCountry,
-          locale
-        }),
-        availability,
-        country: forcedCountry
-      }
-    : undefined;
+  // JSON-LD: attach the official trailer as a VideoObject on every variant,
+  // and on per-country routes scope it to that market (WatchActions +
+  // eligibleRegion) with the country-specific canonical URL.
+  const schemaOpts = {
+    trailer,
+    ...(forcedCountry
+      ? {
+          canonicalPath: titlePath(mediaType, details.tmdbId, {
+            country: forcedCountry,
+            locale
+          }),
+          availability,
+          country: forcedCountry
+        }
+      : {})
+  };
 
   const hub = mediaType === "tv" ? "/tv-shows" : "/movies";
   const hubName = mediaType === "tv" ? t.tvShows : t.movies;
@@ -181,20 +188,15 @@ export async function TitlePageBody({
       <Breadcrumbs items={crumbs} />
 
       <section className="grid md:grid-cols-[260px_1fr] gap-6">
-        {/* Cap the poster width when the grid collapses to one column on
-            mobile so it never renders full-viewport-tall. */}
-        <div className="bg-surface border border-border rounded-xl overflow-hidden w-full max-w-[240px] mx-auto md:max-w-none md:mx-0">
-          <div className="aspect-[2/3] bg-surface2">
-            {details.posterUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={details.posterUrl}
-                alt={`${details.title} poster`}
-                className="w-full h-full object-cover"
-              />
-            ) : null}
-          </div>
-        </div>
+        {/* Poster + official trailer, swipeable. Capped width when the grid
+            collapses to one column on mobile so it never renders
+            full-viewport-tall. */}
+        <PosterGallery
+          posterUrl={details.posterUrl}
+          title={details.title}
+          trailer={trailer}
+          locale={locale}
+        />
         {/* min-w-0 lets the 1fr column shrink; without it the horizontal cast
             scroller's content forces the grid wider than the page container. */}
         <div className="space-y-4 min-w-0">

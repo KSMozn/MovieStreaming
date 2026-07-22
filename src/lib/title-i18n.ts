@@ -128,6 +128,11 @@ export function titleStrings(locale: Locale) {
         opens: "يبدأ العرض",
         rated: "التصنيف",
         findShowtimes: "ابحث عن مواعيد العروض والتذاكر"
+      },
+      gallery: {
+        poster: "الملصق",
+        trailer: "الإعلان",
+        playTrailer: "تشغيل الإعلان الرسمي"
       }
     } as const;
   }
@@ -161,6 +166,11 @@ export function titleStrings(locale: Locale) {
       opens: "Opens",
       rated: "Rated",
       findShowtimes: "Find showtimes & tickets"
+    },
+    gallery: {
+      poster: "Poster",
+      trailer: "Trailer",
+      playTrailer: "Play official trailer"
     }
   } as const;
 }
