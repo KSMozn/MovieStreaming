@@ -31,7 +31,8 @@ const movie: MovieDetailsDto = {
   tmdbVotes: 34000,
   cast: [
     { personId: 6193, name: "Leonardo DiCaprio", character: "Cobb", profileUrl: null }
-  ]
+  ],
+  trailer: null
 };
 
 describe("serializeJsonLd", () => {

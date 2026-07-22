@@ -9,6 +9,17 @@ struct CastMember: Codable, Identifiable, Hashable {
     var id: Int { personId }
 }
 
+// Official trailer from TMDb's curated feed, embedded via YouTube's
+// privacy-enhanced no-cookie player. Optional — many titles have none.
+struct Trailer: Codable, Hashable {
+    let site: String
+    let key: String
+    let name: String
+    let url: String
+    let embedUrl: String
+    let thumbnailUrl: String
+}
+
 struct MovieDetails: Codable {
     let tmdbId: Int
     let mediaType: MediaType
@@ -27,6 +38,7 @@ struct MovieDetails: Codable {
     let tmdbRating: Double?
     let tmdbVotes: Int?
     let cast: [CastMember]
+    let trailer: Trailer?
 }
 
 struct ProviderAvailability: Codable, Identifiable, Hashable {
@@ -43,10 +55,19 @@ struct ProviderAvailability: Codable, Identifiable, Hashable {
     var id: String { providerKey.rawValue }
 }
 
+// Per-country theatrical status derived from TMDb release dates (movies only).
+struct Theatrical: Codable, Hashable {
+    let status: String   // "now" | "upcoming" | "none"
+    let inTheaters: Bool
+    let releaseDate: String?
+    let certification: String?
+}
+
 struct Availability: Codable {
     let country: String
     let providers: [ProviderAvailability]
     let lastCheckedAt: String
+    let theatrical: Theatrical?
 }
 
 struct PersonSearchResult: Codable, Identifiable, Hashable {

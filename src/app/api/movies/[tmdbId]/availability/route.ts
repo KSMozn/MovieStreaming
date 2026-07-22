@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { tmdbGetTitle } from "@/lib/tmdbClient";
+import { tmdbGetReleaseDates, tmdbGetTitle } from "@/lib/tmdbClient";
 import { getAvailability } from "@/lib/watchmodeClient";
-import type { ApiError, AvailabilityDto, MediaType } from "@/types";
+import { computeTheatricalStatus, toTheatricalDto } from "@/lib/theatrical";
+import type { ApiError, AvailabilityDto, MediaType, TheatricalDto } from "@/types";
 
 export const runtime = "nodejs";
 
@@ -34,7 +35,21 @@ export async function GET(
       imdbId,
       country
     });
-    return NextResponse.json(availability);
+
+    // Theatrical status for this country (movies only; best-effort).
+    let theatrical: TheatricalDto | null = null;
+    if (mediaType === "movie") {
+      try {
+        const rel = await tmdbGetReleaseDates(id);
+        theatrical = toTheatricalDto(
+          computeTheatricalStatus(rel.results, country, new Date())
+        );
+      } catch {
+        theatrical = null;
+      }
+    }
+
+    return NextResponse.json({ ...availability, theatrical });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "unknown";
     return NextResponse.json(

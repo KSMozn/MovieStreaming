@@ -56,6 +56,18 @@ data class CastMember(
     val profileUrl: String? = null
 )
 
+// Official trailer from TMDb's curated feed, embedded via YouTube's
+// privacy-enhanced no-cookie player. Null when the title has none.
+@Serializable
+data class Trailer(
+    val site: String,
+    val key: String,
+    val name: String,
+    val url: String,
+    val embedUrl: String,
+    val thumbnailUrl: String
+)
+
 @Serializable
 data class MovieDetails(
     val tmdbId: Int,
@@ -74,7 +86,8 @@ data class MovieDetails(
     val imdbRating: Double? = null,
     val tmdbRating: Double? = null,
     val tmdbVotes: Int? = null,
-    val cast: List<CastMember> = emptyList()
+    val cast: List<CastMember> = emptyList(),
+    val trailer: Trailer? = null
 )
 
 @Serializable
@@ -90,11 +103,21 @@ data class ProviderAvailability(
     val providerGenre: String? = null
 )
 
+// Per-country theatrical status derived from TMDb release dates (movies only).
+@Serializable
+data class Theatrical(
+    val status: String,          // "now" | "upcoming" | "none"
+    val inTheaters: Boolean,
+    val releaseDate: String? = null,
+    val certification: String? = null
+)
+
 @Serializable
 data class Availability(
     val country: String,
     val providers: List<ProviderAvailability>,
-    val lastCheckedAt: String
+    val lastCheckedAt: String,
+    val theatrical: Theatrical? = null
 )
 
 @Serializable

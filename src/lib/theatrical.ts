@@ -7,6 +7,7 @@
 
 import type { CountryInfo } from "@/lib/site";
 import type { Locale } from "@/lib/title-i18n";
+import type { TheatricalDto } from "@/types";
 
 // Shape of one country's block in TMDb's /movie/{id}/release_dates response.
 export interface CountryReleaseDates {
@@ -82,6 +83,25 @@ export function computeTheatricalStatus(
     return { state: "now", date: theatrical.raw, certification: theatrical.cert };
   }
   return { state: "none" };
+}
+
+// Flatten the internal discriminated union into the public API shape (easier
+// for the mobile clients to decode than a tagged union).
+export function toTheatricalDto(status: TheatricalStatus): TheatricalDto {
+  if (status.state === "none") {
+    return {
+      status: "none",
+      inTheaters: false,
+      releaseDate: null,
+      certification: null
+    };
+  }
+  return {
+    status: status.state,
+    inTheaters: status.state === "now",
+    releaseDate: status.date,
+    certification: status.certification
+  };
 }
 
 // Honest outbound link: a country-scoped showtimes search rather than a claim

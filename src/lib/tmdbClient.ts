@@ -1,5 +1,11 @@
 import { fetchJson } from "./http";
 import type { CountryReleaseDates } from "@/lib/theatrical";
+import {
+  pickTrailer,
+  youtubeEmbedUrl,
+  youtubeThumb,
+  youtubeWatchUrl
+} from "@/lib/trailer";
 import type {
   CastMemberDto,
   MediaType,
@@ -196,6 +202,19 @@ export async function tmdbGetReleaseDates(
   return fetchJson<TmdbReleaseDatesResponse>(url, { revalidate: 60 * 60 });
 }
 
+function trailerDto(t: TmdbTitle): MovieDetailsDto["trailer"] {
+  const tr = pickTrailer(t.videos?.results);
+  if (!tr) return null;
+  return {
+    site: "youtube",
+    key: tr.key,
+    name: tr.name,
+    url: youtubeWatchUrl(tr.key),
+    embedUrl: youtubeEmbedUrl(tr.key),
+    thumbnailUrl: youtubeThumb(tr.key)
+  };
+}
+
 export function normalizeTmdbTitle(
   t: TmdbTitle,
   mediaType: MediaType,
@@ -242,7 +261,8 @@ export function normalizeTmdbTitle(
         : null,
     tmdbVotes:
       typeof t.vote_count === "number" && t.vote_count > 0 ? t.vote_count : null,
-    cast
+    cast,
+    trailer: trailerDto(t)
   };
 }
 

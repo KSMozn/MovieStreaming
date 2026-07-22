@@ -1,5 +1,9 @@
 package com.khaledsamir.reelseek.ui.detail
 
+import android.annotation.SuppressLint
+import android.net.Uri
+import android.webkit.WebChromeClient
+import android.webkit.WebView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -8,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,7 +28,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Theaters
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,7 +42,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +57,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.khaledsamir.reelseek.data.RecentEntity
@@ -54,6 +65,8 @@ import com.khaledsamir.reelseek.data.WatchlistEntity
 import com.khaledsamir.reelseek.model.Availability
 import com.khaledsamir.reelseek.model.CastMember
 import com.khaledsamir.reelseek.model.ProviderAvailability
+import com.khaledsamir.reelseek.model.Theatrical
+import com.khaledsamir.reelseek.model.Trailer
 import com.khaledsamir.reelseek.network.ApiConfig
 import com.khaledsamir.reelseek.ui.DetailRoute
 import com.khaledsamir.reelseek.ui.PersonRoute
@@ -152,12 +165,14 @@ fun DetailScreen(navController: NavController, route: DetailRoute) {
 
             when {
                 details != null -> {
+                    details.trailer?.let { TrailerBlock(it) }
                     OverviewBlock(details.overview)
                     AvailabilityBlock(
                         availability = viewModel.availability,
                         country = country,
+                        title = details.title,
                         onCountryChange = { code -> scope.launch { app.countryPrefs.setCountry(code) } },
-                        onOpenProvider = { url -> uriHandler.openUri(url) }
+                        onOpenUrl = { url -> uriHandler.openUri(url) }
                     )
                     CastBlock(details.cast) { personId ->
                         navController.navigate(PersonRoute(personId))
@@ -320,21 +335,140 @@ private fun OverviewBlock(overview: String) {
     }
 }
 
+// Compact trailer viewer: a thumbnail facade that swaps to an inline YouTube
+// (no-cookie) WebView player once tapped — YouTube isn't loaded until then.
+@Composable
+private fun TrailerBlock(trailer: Trailer) {
+    var playing by remember { mutableStateOf(false) }
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(horizontal = 16.dp)
+    ) {
+        Text("Trailer", fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = Theme.TextPrimary)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16f / 9f)
+                .clip(RoundedCornerShape(Theme.CardCornerRadius))
+                .background(Color.Black)
+        ) {
+            if (playing) {
+                TrailerWebView(trailer.embedUrl, modifier = Modifier.fillMaxSize())
+            } else {
+                RemoteImage(
+                    url = trailer.thumbnailUrl,
+                    contentDescription = trailer.name,
+                    modifier = Modifier.fillMaxSize()
+                )
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.25f))
+                        .clickable { playing = true },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.PlayCircle,
+                        contentDescription = "Play official trailer",
+                        tint = Color.White,
+                        modifier = Modifier.size(56.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@SuppressLint("SetJavaScriptEnabled")
+@Composable
+private fun TrailerWebView(embedUrl: String, modifier: Modifier = Modifier) {
+    val url = remember(embedUrl) {
+        val sep = if (embedUrl.contains("?")) "&" else "?"
+        "$embedUrl${sep}autoplay=1&playsinline=1"
+    }
+    AndroidView(
+        modifier = modifier,
+        factory = { context ->
+            WebView(context).apply {
+                settings.javaScriptEnabled = true
+                settings.mediaPlaybackRequiresUserGesture = false
+                settings.domStorageEnabled = true
+                setBackgroundColor(android.graphics.Color.BLACK)
+                webChromeClient = WebChromeClient()
+                loadUrl(url)
+            }
+        }
+    )
+}
+
+// "In theaters now / coming to cinemas" banner + honest showtimes search link.
+@Composable
+private fun TheatricalBanner(
+    theatrical: Theatrical,
+    countryLabel: String,
+    title: String,
+    onOpenUrl: (String) -> Unit
+) {
+    val heading = if (theatrical.status == "now")
+        "In theaters now in $countryLabel"
+    else
+        "Coming to cinemas in $countryLabel"
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Theme.CardCornerRadius))
+            .background(Theme.Accent.copy(alpha = 0.12f))
+            .padding(10.dp)
+    ) {
+        Icon(Icons.Default.Theaters, contentDescription = null, tint = Theme.Accent, modifier = Modifier.size(20.dp))
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(heading, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Theme.TextPrimary)
+            theatrical.releaseDate?.let {
+                Text(it.take(10), fontSize = 12.sp, color = Theme.TextSecondary)
+            }
+        }
+        Text(
+            "Showtimes",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Theme.Accent,
+            modifier = Modifier.clickable {
+                val q = Uri.encode("$title showtimes $countryLabel")
+                onOpenUrl("https://www.google.com/search?q=$q")
+            }
+        )
+    }
+}
+
+private fun countryLabel(code: String): String =
+    ApiConfig.COUNTRIES.firstOrNull { it.first == code }?.second ?: code
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AvailabilityBlock(
     availability: Availability?,
     country: String,
+    title: String,
     onCountryChange: (String) -> Unit,
-    onOpenProvider: (String) -> Unit
+    onOpenUrl: (String) -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.padding(horizontal = 16.dp)
     ) {
+        availability?.theatrical?.takeIf { it.status != "none" }?.let {
+            TheatricalBanner(
+                theatrical = it,
+                countryLabel = countryLabel(availability.country),
+                title = title,
+                onOpenUrl = onOpenUrl
+            )
+        }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                "Watch in $country",
+                "Watch in ${countryLabel(country)}",
                 fontSize = 17.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Theme.TextPrimary
@@ -350,7 +484,7 @@ private fun AvailabilityBlock(
                 Text("Checking availability…", fontSize = 13.sp, color = Theme.TextMuted)
             available.isEmpty() ->
                 Text(
-                    "Not available on tracked providers in ${availability.country}.",
+                    "Not available on tracked providers in ${countryLabel(availability.country)}.",
                     fontSize = 13.sp,
                     color = Theme.TextMuted
                 )
@@ -360,7 +494,7 @@ private fun AvailabilityBlock(
                     modifier = Modifier.horizontalScroll(rememberScrollState())
                 ) {
                     available.forEach { provider ->
-                        ProviderCard(provider, onOpenProvider)
+                        ProviderCard(provider, onOpenUrl)
                     }
                 }
         }

@@ -7,6 +7,7 @@ struct DetailView: View {
     var prefetched: DiscoverResult? = nil
 
     @State private var vm = DetailViewModel()
+    @State private var showTrailer = false
     @Environment(\.modelContext) private var modelContext
     @Query private var watchlist: [WatchlistItem]
     // Persisted availability country (EG/SA/AE), shared with FiltersSheet —
@@ -29,6 +30,9 @@ struct DetailView: View {
                     ratingsRow
                     actions
                     if let d = vm.details {
+                        if let trailer = d.trailer {
+                            trailerBlock(trailer)
+                        }
                         overviewBlock(d)
                         if let a = vm.availability {
                             availabilityBlock(a)
@@ -203,11 +207,108 @@ struct DetailView: View {
         .padding(.top, 4)
     }
 
+    // MARK: Trailer
+
+    private func trailerBlock(_ trailer: Trailer) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Trailer").font(.headline).foregroundStyle(Theme.textPrimary)
+            Button {
+                showTrailer = true
+            } label: {
+                ZStack {
+                    RemoteImage(urlString: trailer.thumbnailUrl, contentMode: .fill)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 190)
+                        .clipped()
+                    Color.black.opacity(0.25)
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 54))
+                        .foregroundStyle(.white)
+                        .shadow(radius: 8)
+                }
+                .frame(height: 190)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.border))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Play official trailer")
+        }
+        .padding(.horizontal, 16)
+        .sheet(isPresented: $showTrailer) {
+            NavigationStack {
+                TrailerPlayerView(embedUrl: trailer.embedUrl)
+                    .aspectRatio(16.0 / 9.0, contentMode: .fit)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black)
+                    .navigationTitle(trailer.name)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            if let url = URL(string: trailer.url) {
+                                Link("YouTube", destination: url)
+                            }
+                        }
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Done") { showTrailer = false }
+                        }
+                    }
+            }
+        }
+    }
+
+    // MARK: In-theaters
+
+    private func countryLabel(_ code: String) -> String {
+        APIConfig.countries.first { $0.code == code }?.label ?? code
+    }
+
+    private func showtimesURL(title: String, countryLabel: String) -> URL? {
+        let q = "\(title) showtimes \(countryLabel)"
+        let encoded = q.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? q
+        return URL(string: "https://www.google.com/search?q=\(encoded)")
+    }
+
+    private func theatricalBanner(_ th: Theatrical, countryLabel: String, title: String) -> some View {
+        let heading = th.status == "now"
+            ? "In theaters now in \(countryLabel)"
+            : "Coming to cinemas in \(countryLabel)"
+        return HStack(spacing: 10) {
+            Image(systemName: "ticket.fill").foregroundStyle(Theme.accent)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(heading)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Theme.textPrimary)
+                if let d = th.releaseDate {
+                    Text(String(d.prefix(10)))
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+            }
+            Spacer()
+            if let url = showtimesURL(title: title, countryLabel: countryLabel) {
+                Link("Showtimes", destination: url)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.accent)
+            }
+        }
+        .padding(10)
+        .background(Theme.accent.opacity(0.12))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.accent.opacity(0.3)))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
     private func availabilityBlock(_ a: Availability) -> some View {
         let available = a.providers.filter { $0.available }
         return VStack(alignment: .leading, spacing: 8) {
+            if let th = a.theatrical, th.status != "none" {
+                theatricalBanner(
+                    th,
+                    countryLabel: countryLabel(a.country),
+                    title: vm.details?.title ?? ""
+                )
+            }
             HStack {
-                Text("Watch in \(a.country)")
+                Text("Watch in \(countryLabel(a.country))")
                     .font(.headline)
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
@@ -223,7 +324,7 @@ struct DetailView: View {
             }
 
             if available.isEmpty {
-                Text("Not available on tracked providers in \(a.country).")
+                Text("Not available on tracked providers in \(countryLabel(a.country)).")
                     .font(.footnote)
                     .foregroundStyle(Theme.textMuted)
             } else {

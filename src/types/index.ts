@@ -27,6 +27,19 @@ export interface CastMemberDto {
   profileUrl: string | null;
 }
 
+// Official trailer, sourced from TMDb's curated /videos feed (YouTube). URLs
+// use YouTube's privacy-enhanced no-cookie player for embedding.
+export interface TrailerDto {
+  site: "youtube";
+  key: string;
+  name: string;
+  /** Public watch page (youtube.com/watch?v=…). */
+  url: string;
+  /** Privacy-enhanced embed (youtube-nocookie.com/embed/…). */
+  embedUrl: string;
+  thumbnailUrl: string;
+}
+
 export interface MovieDetailsDto {
   tmdbId: number;
   mediaType: MediaType;
@@ -47,6 +60,8 @@ export interface MovieDetailsDto {
   tmdbRating: number | null;
   tmdbVotes: number | null;
   cast: CastMemberDto[];
+  /** Official trailer, or null when none is available. */
+  trailer: TrailerDto | null;
 }
 
 export type AvailabilityType =
@@ -69,10 +84,25 @@ export interface ProviderAvailabilityDto {
   providerGenre: string | null;
 }
 
+// Per-country theatrical status, derived from TMDb release dates.
+export interface TheatricalDto {
+  status: "now" | "upcoming" | "none";
+  /** Convenience flag: true only when status === "now". */
+  inTheaters: boolean;
+  /** Theatrical release date for this country (ISO), if any. */
+  releaseDate: string | null;
+  certification: string | null;
+}
+
 export interface AvailabilityDto {
   country: string;
   providers: ProviderAvailabilityDto[];
   lastCheckedAt: string;
+  /**
+   * Theatrical status for `country`. Optional: only the public availability
+   * endpoint populates it (the web renders it via a separate path).
+   */
+  theatrical?: TheatricalDto | null;
 }
 
 export interface ApiError {
