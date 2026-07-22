@@ -236,7 +236,7 @@ struct DetailView: View {
         .padding(.horizontal, 16)
         .sheet(isPresented: $showTrailer) {
             NavigationStack {
-                TrailerPlayerView(embedUrl: trailer.embedUrl)
+                TrailerPlayerView(youtubeKey: trailer.key)
                     .aspectRatio(16.0 / 9.0, contentMode: .fit)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(Color.black)

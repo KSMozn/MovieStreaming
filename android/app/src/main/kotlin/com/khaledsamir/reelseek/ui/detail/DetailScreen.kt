@@ -353,7 +353,7 @@ private fun TrailerBlock(trailer: Trailer) {
                 .background(Color.Black)
         ) {
             if (playing) {
-                TrailerWebView(trailer.embedUrl, modifier = Modifier.fillMaxSize())
+                TrailerWebView(trailer.key, modifier = Modifier.fillMaxSize())
             } else {
                 RemoteImage(
                     url = trailer.thumbnailUrl,
@@ -381,10 +381,23 @@ private fun TrailerBlock(trailer: Trailer) {
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-private fun TrailerWebView(embedUrl: String, modifier: Modifier = Modifier) {
-    val url = remember(embedUrl) {
-        val sep = if (embedUrl.contains("?")) "&" else "?"
-        "$embedUrl${sep}autoplay=1&playsinline=1"
+private fun TrailerWebView(youtubeKey: String, modifier: Modifier = Modifier) {
+    // Must embed the YouTube <iframe> inside a document served from a real
+    // https origin (via loadDataWithBaseURL + a matching `origin` param), not
+    // navigate straight to the /embed URL — otherwise YouTube returns
+    // "Video player configuration error (153)".
+    val origin = "https://reelseek.co"
+    val html = remember(youtubeKey) {
+        val src = "https://www.youtube-nocookie.com/embed/$youtubeKey" +
+            "?playsinline=1&autoplay=1&rel=0&modestbranding=1&origin=$origin"
+        """
+        <!DOCTYPE html><html><head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>*{margin:0;padding:0}html,body{background:#000;height:100%}iframe{border:0;width:100%;height:100%}</style>
+        </head><body>
+        <iframe src="$src" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+        </body></html>
+        """.trimIndent()
     }
     AndroidView(
         modifier = modifier,
@@ -395,7 +408,7 @@ private fun TrailerWebView(embedUrl: String, modifier: Modifier = Modifier) {
                 settings.domStorageEnabled = true
                 setBackgroundColor(android.graphics.Color.BLACK)
                 webChromeClient = WebChromeClient()
-                loadUrl(url)
+                loadDataWithBaseURL(origin, html, "text/html", "utf-8", null)
             }
         }
     )
