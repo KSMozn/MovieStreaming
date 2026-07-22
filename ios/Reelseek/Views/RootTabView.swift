@@ -1,10 +1,12 @@
 import SwiftUI
 
 struct RootTabView: View {
+    @State private var homePath = NavigationPath()
+
     var body: some View {
         TabView {
-            NavigationStack {
-                HomeView()
+            NavigationStack(path: $homePath) {
+                HomeView(path: $homePath)
             }
             .tabItem { Label("Home", systemImage: "house.fill") }
 

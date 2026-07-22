@@ -2,10 +2,16 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
+    // The enclosing NavigationStack's path (owned by RootTabView). Programmatic
+    // pushes (e.g. picking an instant-search result) append to this, so the
+    // whole stack uses ONE value-based navigation mechanism — mixing
+    // navigationDestination(item:) with navigationDestination(for:) in the same
+    // stack is undefined behavior and mis-routed cast taps to the current movie.
+    @Binding var path: NavigationPath
+
     @State private var vm = HomeViewModel()
     @State private var showAbout = false
     @State private var searchText: String = ""
-    @State private var navigation: DiscoverResult?
 
     @Query(sort: \RecentItem.viewedAt, order: .reverse) private var recents: [RecentItem]
 
@@ -30,7 +36,7 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     hero
                     SearchBarField(text: $searchText) { result in
-                        navigation = result
+                        path.append(result)
                     }
 
                     advancedSearchCTA
@@ -70,9 +76,6 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showAbout) {
             AboutView()
-        }
-        .navigationDestination(item: $navigation) { r in
-            DetailView(tmdbId: r.tmdbId, mediaType: r.mediaType, prefetched: r)
         }
         .navigationDestination(for: DiscoverResult.self) { r in
             DetailView(tmdbId: r.tmdbId, mediaType: r.mediaType, prefetched: r)
